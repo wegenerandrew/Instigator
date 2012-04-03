@@ -18,6 +18,7 @@ static const int boardled_mask = _BV(1);
 
 void blink_init(){
 	PORTR.DIRSET = boardled_mask;
+	PORTR.OUTSET = boardled_mask;
 }
 int main(void)
 {
@@ -25,12 +26,10 @@ int main(void)
 	estop_init();
 	blink_init();
 	motor_init();
+	_delay_ms(1000);
     while(1)
     {
-		
-        PORTR.OUTSET= boardled_mask;
-		_delay_ms(1000);
-		PORTR.OUTCLR= boardled_mask;
-		_delay_ms(1000);
+		motor_tick();
+		_delay_ms(10);
     }
 }

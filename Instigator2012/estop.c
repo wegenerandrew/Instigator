@@ -4,10 +4,13 @@
 #include <stdio.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
+#include <stdbool.h>
 
 #define SIGINT0VECT PORTF_INT0_vect
 
 static const int boardled_mask = _BV(1);
+
+static volatile bool estop = false;
 
 void estop_init(){
 	PORTF.DIRSET &=  0x0F;		 //Set pin 7 as input leave pwm pins alone
@@ -19,10 +22,15 @@ void estop_init(){
 	
 }
 
+_Bool estop_check() {
+	return estop;
+}
+
+void estop_setLED() {
+	PORTR.OUTCLR = boardled_mask;
+}
+
 ISR(SIGINT0VECT){
+	estop = true;
 	PORTF.INTFLAGS= 0x01; //Clear the flag by writing a one to it 
-	
-	PORTR.OUTCLR=boardled_mask; //Turn on the debug led, low true
-	_delay_ms(10000);
-	
 }
