@@ -1,6 +1,7 @@
 #include "motor.h"
 #include <avr/io.h>
 #include <stdio.h>
+#include "debug.h"
 
 
 static const int ctrlpins_mask = 0xFF;
@@ -10,7 +11,7 @@ static const int PWMpins_mask = 0x0F;
 
 
 
-static const uint8_t port[4] = {2, 3, 1, 0}; // LRDF
+static const uint8_t port[4] = {0, 1, 2, 3}; // LRDF
 
 void motor_init() {
 	PORTK.DIRSET = ctrlpins_mask;
