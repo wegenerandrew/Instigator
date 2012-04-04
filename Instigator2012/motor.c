@@ -71,7 +71,7 @@ void motor_tick() {
 		motor_setPWM(MOTOR_RIGHT, 0);
 		motor_setPWM(MOTOR_LEFT, 0);
 	} else {				// Normal Operations
-		motor_setPWM(MOTOR_LEFT, 1000);
-		motor_setPWM(MOTOR_RIGHT, 1000);
+		motor_setPWM(MOTOR_LEFT, 500);
+		motor_setPWM(MOTOR_RIGHT, 500);
 	}
 }
