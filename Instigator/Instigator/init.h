@@ -2,6 +2,9 @@
 #define INIT_H_
 
 void init();
-void init_all();
+
+void init_clocks();
+void init_interrupts();
+void init_modules();
 
 #endif

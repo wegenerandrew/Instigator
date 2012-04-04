@@ -70,6 +70,12 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="controlpanel.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="controlpanel.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="debug.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -107,6 +113,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="uart.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="util.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="util.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>

@@ -1,7 +1,7 @@
 #include "uart.h"
 #include "motor.h"		// For kill switch
 #include "debug.h"
-//#include "util.h"
+#include "util.h"
 #include <util/delay.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>

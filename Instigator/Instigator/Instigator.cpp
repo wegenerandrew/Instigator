@@ -5,14 +5,15 @@
 #include "motor.h"
 #include "init.h"
 #include "estop.h"
+#include "controlpanel.h"
 
 
 int main(void)
 {
 	init();
-	init_all();
 	_delay_ms(1000);
     while(1)
     {
+		controlpanel();
     }
 }

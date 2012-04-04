@@ -35,13 +35,15 @@ SUBDIRS :=
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
+../controlpanel.cpp \
 ../debug.cpp \
 ../estop.cpp \
 ../init.cpp \
 ../Instigator.cpp \
 ../motor.cpp \
 ../tick.cpp \
-../uart.cpp
+../uart.cpp \
+../util.cpp
 
 
 PREPROCESSING_SRCS += 
@@ -51,43 +53,51 @@ ASM_SRCS +=
 
 
 OBJS +=  \
+controlpanel.o \
 debug.o \
 estop.o \
 init.o \
 Instigator.o \
 motor.o \
 tick.o \
-uart.o
+uart.o \
+util.o
 
 
 OBJS_AS_ARGS +=  \
+controlpanel.o \
 debug.o \
 estop.o \
 init.o \
 Instigator.o \
 motor.o \
 tick.o \
-uart.o
+uart.o \
+util.o
 
 
 C_DEPS +=  \
+controlpanel.d \
 debug.d \
 estop.d \
 init.d \
 Instigator.d \
 motor.d \
 tick.d \
-uart.d
+uart.d \
+util.d
 
 
 C_DEPS_AS_ARGS +=  \
+controlpanel.d \
 debug.d \
 estop.d \
 init.d \
 Instigator.d \
 motor.d \
 tick.d \
-uart.d
+uart.d \
+util.d
 
 
 OUTPUT_FILE_PATH +=Instigator.elf
@@ -99,6 +109,10 @@ ADDITIONAL_DEPENDENCIES:=
 OUTPUT_FILE_DEP:= ./makedep.mk
 
 # AVR32/GNU C Compiler
+
+
+
+
 
 
 
