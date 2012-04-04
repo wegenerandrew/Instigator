@@ -67,6 +67,4 @@ void motor_estop() {
 }
 
 void motor_tick() {
-	motor_setPWM(MOTOR_LEFT, 500);
-	motor_setPWM(MOTOR_RIGHT, 500);
 }

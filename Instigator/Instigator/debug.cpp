@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdint.h>
 
 static const int errorled_mask = _BV(1);
 

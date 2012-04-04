@@ -1,7 +1,7 @@
 #include "uart.h"
-#include "motor.h"		// For kill switch
 #include "debug.h"
 #include "util.h"
+#include "estop.h"
 #include <util/delay.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -118,11 +118,7 @@ static void receive(UARTNum num) {
 
 	if (byte == 27 || byte == '!' || byte == '`') {		// E-Stop is ESC key, !, or `
 		cli();
-		motor_allOff();
-		_delay_ms(100);
-		CPU_CCP = CCP_IOREG_gc;
-		RST.CTRL = RST_SWRST_bm;
-//		debug_setLED(ERROR_LED, true);
+		estop_killall();
 	}
 
 	if (data.inbuf_pos >= sizeof(data.inbuf))

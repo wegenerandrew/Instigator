@@ -38,5 +38,7 @@ void init_modules() {
 	debug_init();
 	tick_init();
 	motor_init();
+	//motorcontrol_init();
+	//pid_init();
 	controlpanel_init();
 }

@@ -24,12 +24,19 @@ _Bool estop_check() {
 }
 
 void estop_killall() {
+	estop = true;
 	motor_estop();
+	_delay_ms(10);
 	debug_setErrorLED();
+	cli();				// Disable all interrupts
+//	PMIC.CTRL = 0x00;	// Disable High, Medium, and Low level interrupts
+	CPU_CCP = CCP_IOREG_gc;		// give change protection signature
+	RST.CTRL = RST_SWRST_bm;	// software reset processor
 }
 
 ISR(SIGINT0VECT){
-	estop = true;
 	PORTF.INTFLAGS= 0x01; //Clear the flag by writing a one to it 
 	estop_killall();
 }
+
+
