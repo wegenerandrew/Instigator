@@ -20,6 +20,9 @@ void tick_suspend() {
 }
 
 ISR(TIMOVFVEC) {
-	motor_tick();
-	
+	if (estop_check()) {		// If estopped, run estops
+		motor_estop();
+	} else {					// Else, run normal ticks
+		motor_tick();
+	}	
 }

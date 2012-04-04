@@ -3,7 +3,7 @@
 
 void estop_init();
 void estop_setLED();
-_Bool estop_check();
+bool estop_check();
 
 #endif
 

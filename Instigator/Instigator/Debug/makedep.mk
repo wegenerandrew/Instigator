@@ -2,17 +2,17 @@
 # Automatically-generated file. Do not edit or delete the file
 ################################################################################
 
-debug.c
+debug.cpp
 
-estop.c
+estop.cpp
 
-init.c
+init.cpp
 
-main.c
+Instigator.cpp
 
-motor.c
+motor.cpp
 
-tick.c
+tick.cpp
 
-uart.c
+uart.cpp
 

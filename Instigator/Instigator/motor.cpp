@@ -62,16 +62,10 @@ int16_t motor_getPWM(uint8_t mot) {
 }
 
 void motor_estop() {
-	motor_setPWM(MOTOR_RIGHT, 0);
-	motor_setPWM(MOTOR_LEFT, 0);
+	motor_allOff();
 }
 
 void motor_tick() {
-	if (estop_check()) {	// If we have an ESTOP
-		motor_setPWM(MOTOR_RIGHT, 0);
-		motor_setPWM(MOTOR_LEFT, 0);
-	} else {				// Normal Operations
-		motor_setPWM(MOTOR_LEFT, 500);
-		motor_setPWM(MOTOR_RIGHT, 500);
-	}
+	motor_setPWM(MOTOR_LEFT, 500);
+	motor_setPWM(MOTOR_RIGHT, 500);
 }
