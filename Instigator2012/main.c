@@ -13,23 +13,13 @@
 #include "init.h"
 #include "estop.h"
 
-static const int boardled_mask = _BV(1);
 
-
-void blink_init(){
-	PORTR.DIRSET = boardled_mask;
-	PORTR.OUTSET = boardled_mask;
-}
 int main(void)
 {
 	init();
-	estop_init();
-	blink_init();
-	motor_init();
+	init_all();
 	_delay_ms(1000);
     while(1)
     {
-		motor_tick();
-		_delay_ms(10);
     }
 }

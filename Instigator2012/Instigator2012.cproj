@@ -71,16 +71,37 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="debug.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="debug.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="estop.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="estop.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="init.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="init.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="motor.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="motor.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="tick.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="tick.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>

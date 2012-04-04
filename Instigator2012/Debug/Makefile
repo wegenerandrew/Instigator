@@ -35,10 +35,12 @@ SUBDIRS :=
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
+../debug.c \
 ../estop.c \
 ../init.c \
 ../main.c \
-../motor.c
+../motor.c \
+../tick.c
 
 
 PREPROCESSING_SRCS += 
@@ -48,31 +50,39 @@ ASM_SRCS +=
 
 
 OBJS +=  \
+debug.o \
 estop.o \
 init.o \
 main.o \
-motor.o
+motor.o \
+tick.o
 
 
 OBJS_AS_ARGS +=  \
+debug.o \
 estop.o \
 init.o \
 main.o \
-motor.o
+motor.o \
+tick.o
 
 
 C_DEPS +=  \
+debug.d \
 estop.d \
 init.d \
 main.d \
-motor.d
+motor.d \
+tick.d
 
 
 C_DEPS_AS_ARGS +=  \
+debug.d \
 estop.d \
 init.d \
 main.d \
-motor.d
+motor.d \
+tick.d
 
 
 OUTPUT_FILE_PATH +=Instigator2012.elf
@@ -84,6 +94,10 @@ ADDITIONAL_DEPENDENCIES:=
 OUTPUT_FILE_DEP:= ./makedep.mk
 
 # AVR32/GNU C Compiler
+
+
+
+
 
 
 

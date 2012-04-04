@@ -2,6 +2,6 @@
 #define INIT_H_
 
 void init();
-
+void init_all();
 
 #endif
