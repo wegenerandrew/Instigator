@@ -2,7 +2,7 @@
 #include <avr/pgmspace.h>
 #include <stdio.h>
 #include <util/delay.h>
-#include "motor.h"
+#include "control/motor.h"
 #include "init.h"
 #include "estop.h"
 #include "controlpanel.h"

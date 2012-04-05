@@ -5,7 +5,7 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
 #include <stdbool.h>
-#include "motor.h"
+#include "control/motor.h"
 #include "debug.h"
 
 #define SIGINT0VECT PORTF_INT0_vect

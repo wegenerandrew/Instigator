@@ -1,4 +1,4 @@
-#include "motor.h"
+#include "control/motor.h"
 #include <avr/io.h>
 #include <stdio.h>
 #include "debug.h"

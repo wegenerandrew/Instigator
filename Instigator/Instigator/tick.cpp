@@ -1,5 +1,5 @@
 #include "tick.h"
-#include "motor.h"
+#include "control/motor.h"
 #include "estop.h"
 #include <avr/interrupt.h>
 

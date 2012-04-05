@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
-#include "motor.h"
+#include "control/motor.h"
 #include "estop.h"
 #include "debug.h"
 #include "uart.h"
