@@ -4,12 +4,14 @@
 #include <stdio.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
-#include "control/motor.h"
-#include "estop.h"
-#include "debug.h"
-#include "uart.h"
 #include "controlpanel.h"
+#include "control/motorcontrol.h"
+#include "debug.h"
+#include "estop.h"
+#include "hardware/encoder.h"
+#include "hardware/motor.h"
 #include "tick.h"
+#include "uart.h"
 
 void init() {
 	init_clocks();
@@ -37,8 +39,8 @@ void init_modules() {
 	uart_init();
 	debug_init();
 	tick_init();
+	enc_init();
 	motor_init();
-	//motorcontrol_init();
-	//pid_init();
+	motorcontrol_init();
 	controlpanel_init();
 }

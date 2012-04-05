@@ -1,8 +1,9 @@
 #include "control/motorcontrol.h"
-#include "control/motor.h"
-#include "tick.h"
 #include "control/pid.h"
 #include "debug.h"
+#include "hardware/encoder.h"
+#include "hardware/motor.h"
+#include "tick.h"
 #include "util.h"
 #include <avr/interrupt.h>
 #include <avr/io.h>

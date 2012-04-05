@@ -1,6 +1,7 @@
 #include "controlpanel.h"
+#include "control/drive.h"
 #include "debug.h"
-#include "control/motor.h"
+#include "hardware/motor.h"
 #include "tick.h"
 #include "util.h"
 #include <avr/io.h>

@@ -1,8 +1,8 @@
 #ifndef MOTORCONTROL_H_
 #define MOTORCONTROL_H_
 
-#include "motor.h"
-#include "pid.h"
+#include "hardware/motor.h"
+#include "control/pid.h"
 
 static const int motorcontrol_count = 2;
 

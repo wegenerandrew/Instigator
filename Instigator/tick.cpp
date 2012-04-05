@@ -1,6 +1,7 @@
-#include "tick.h"
-#include "control/motor.h"
+#include "control/motorcontrol.h"
 #include "estop.h"
+#include "hardware/motor.h"
+#include "tick.h"
 #include <avr/interrupt.h>
 
 #define TIMOVFVEC TCF1_OVF_vect
@@ -23,6 +24,6 @@ ISR(TIMOVFVEC) {
 	if (estop_check()) {		// If estopped, run estops
 		motor_estop();
 	} else {					// Else, run normal ticks
-		motor_tick();
+		motorcontrol_tick();
 	}	
 }
