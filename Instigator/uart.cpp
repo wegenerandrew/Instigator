@@ -118,7 +118,7 @@ static void receive(UARTNum num) {
 
 	if (byte == 27 || byte == '!' || byte == '`') {		// E-Stop is ESC key, !, or `
 		cli();
-		estop_killall();
+		estop_reboot();
 	}
 
 	if (data.inbuf_pos >= sizeof(data.inbuf))

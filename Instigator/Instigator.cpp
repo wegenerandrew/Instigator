@@ -13,7 +13,6 @@ int main(void)
 {
 	init();
 	_delay_ms(1000);
-	debug_setErrorLED();
     while(1)
     {
 		controlpanel();

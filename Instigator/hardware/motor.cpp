@@ -23,10 +23,6 @@ void motor_init() {
 	TCF0.CTRLA = TC_CLKSEL_DIV1_gc; // no divider means timer runs at 32Mhz
 	TCF0.CTRLB = TC0_CCAEN_bm | TC0_CCBEN_bm | TC0_CCCEN_bm | TC0_CCDEN_bm | TC_WGMODE_SS_gc; // enable all capture compares, single slope PWM
 	TCF0.PER = 1023; // 32Mhz / ~1024 = 31.25 khz PWM freq
-
-	//motor_setPWM(MOTOR_FAN, motor_maxPWM);
-	motor_setPWM(MOTOR_RIGHT, 512);
-	motor_setPWM(MOTOR_LEFT, 512);
 }
 
 void motor_setPWM(uint8_t mot, int16_t PWM) {
@@ -43,13 +39,13 @@ void motor_setPWM(uint8_t mot, int16_t PWM) {
 		PORTK.OUTSET = in1pin_mask;
 		(&TCF0.CCABUF)[port[mot]] = PWM;
 
-		motordir_port.OUTSET = _BV(mot);		// Set directional port forwards
+		motordir_port.OUTCLR = _BV(mot);		// Set directional port forwards
 	} else {
 		PORTK.OUTCLR = in1pin_mask;
 		PORTK.OUTSET = in2pin_mask;
 		(&TCF0.CCABUF)[port[mot]] = -PWM;
 
-		motordir_port.OUTCLR = _BV(mot);		// Set directional port backwards
+		motordir_port.OUTSET = _BV(mot);		// Set directional port backwards
 	}
 }
 

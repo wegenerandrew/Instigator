@@ -38,7 +38,7 @@ bool controlpanel() {
 }
 
 void controlpanel_drive() {
-	float speed=800;
+	float speed = 700;
 	while (true) {
 		char ch=controlpanel_promptChar("Drive");
 

@@ -7,6 +7,7 @@ bool estop_check();
 void estop_restart();
 
 void estop_killall();
+void estop_reboot();
 
 #endif
 
