@@ -41,7 +41,7 @@ void uart_init() {
 	uartport_usb.OUTSET = _BV(txpin_usb); // make pin high to avoid transmitting a false start bit on startup
 	uartport_usb.DIRSET = _BV(txpin_usb);
 
-	uart_usb.CTRLA = USART_RXCINTLVL_LO_gc;
+	uart_usb.CTRLA = USART_RXCINTLVL_LO_gc;		// Set to low priority
 	uart_usb.CTRLB = USART_RXEN_bm | USART_TXEN_bm | USART_CLK2X_bm;
 	uart_usb.CTRLC = USART_CHSIZE_8BIT_gc;
 	uart_usb.BAUDCTRLA = bsel_usb & 0xFF;
@@ -50,7 +50,7 @@ void uart_init() {
 	uartport_xbee.OUTSET = _BV(txpin_xbee);
 	uartport_xbee.DIRSET = _BV(txpin_xbee);
 
-	uart_xbee.CTRLA = USART_RXCINTLVL_LO_gc;
+	uart_xbee.CTRLA = USART_RXCINTLVL_LO_gc;	// Set to low priority
 	uart_xbee.CTRLB = USART_RXEN_bm | USART_TXEN_bm;
 	uart_xbee.CTRLC = USART_CHSIZE_8BIT_gc;
 	uart_xbee.BAUDCTRLA = bsel_xbee & 0xFF;
@@ -67,7 +67,7 @@ bool uart_put(UARTNum num, char ch) {
 
 	usart.CTRLA &= ~USART_DREINTLVL_gm;
 	data.outbuf[data.outbuf_pos++] = ch;
-	usart.CTRLA |= USART_DREINTLVL_LO_gc; // enable transmit interrupt
+	usart.CTRLA |= USART_DREINTLVL_LO_gc; // enable transmit interrupt at low priority
 	return true;
 }
 

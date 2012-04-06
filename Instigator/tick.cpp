@@ -24,6 +24,6 @@ ISR(TIMOVFVEC) {
 	if (estop_check()) {		// If estopped, run estops
 		motor_estop();
 	} else {					// Else, run normal ticks
-		motorcontrol_tick();
+		//motorcontrol_tick();
 	}	
 }

@@ -1,4 +1,4 @@
-#include "control/motor.h"
+#include "hardware/motor.h"
 #include <avr/io.h>
 #include <stdio.h>
 #include "debug.h"
@@ -9,13 +9,16 @@ static const int ctrlpins_mask = 0xFF;
 
 static const int PWMpins_mask = 0x0F;
 
-
+static PORT_t &motordir_port = PORTD;
+static const int motordir_mask = _BV(0) | _BV(1);
 
 static const uint8_t port[4] = {0, 1, 2, 3}; // LRDF
 
 void motor_init() {
 	PORTK.DIRSET = ctrlpins_mask;
 	PORTF.DIRSET = PWMpins_mask;
+
+	motordir_port.DIRSET = motordir_mask;
 
 	TCF0.CTRLA = TC_CLKSEL_DIV1_gc; // no divider means timer runs at 32Mhz
 	TCF0.CTRLB = TC0_CCAEN_bm | TC0_CCBEN_bm | TC0_CCCEN_bm | TC0_CCDEN_bm | TC_WGMODE_SS_gc; // enable all capture compares, single slope PWM
@@ -39,10 +42,14 @@ void motor_setPWM(uint8_t mot, int16_t PWM) {
 		PORTK.OUTCLR = in2pin_mask;
 		PORTK.OUTSET = in1pin_mask;
 		(&TCF0.CCABUF)[port[mot]] = PWM;
+
+		motordir_port.OUTSET = _BV(mot);		// Set directional port forwards
 	} else {
 		PORTK.OUTCLR = in1pin_mask;
 		PORTK.OUTSET = in2pin_mask;
 		(&TCF0.CCABUF)[port[mot]] = -PWM;
+
+		motordir_port.OUTCLR = _BV(mot);		// Set directional port backwards
 	}
 }
 
