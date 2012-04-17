@@ -1,7 +1,10 @@
 #include "controlpanel.h"
 #include "control/drive.h"
+#include "control/magfollow.h"
 #include "debug.h"
 #include "hardware/motor.h"
+#include "hardware/mag.h"
+#include "hardware/encoder.h"
 #include "tick.h"
 #include "util.h"
 #include <avr/io.h>
@@ -24,13 +27,17 @@ bool controlpanel() {
 			case 'd':
 				controlpanel_drive();
 				break;
+			case 's':
+				controlpanel_sensor();
+				break;
 			default:
 				puts_P(unknown_str);
 				break;
 			case '?':
 				static const char msg[] PROGMEM =
 					"Control Panels:\n"
-					"  d - Drive";
+					"  d - Drive"
+					"  s - Sensors";
 				puts_P(msg);
 				break;
 		}
@@ -38,7 +45,7 @@ bool controlpanel() {
 }
 
 void controlpanel_drive() {
-	float speed = 700;
+	float speed = 600;
 	while (true) {
 		char ch=controlpanel_promptChar("Drive");
 
@@ -74,23 +81,31 @@ void controlpanel_drive() {
 				break;
 
 			case 'W':
+				motor_setPWM(MOTOR_LEFT, 1000);
+				motor_setPWM(MOTOR_RIGHT, 1000);
 				//drive_fdDist(speed, 50);
 				break;
 			case 'A':
+				motor_setPWM(MOTOR_LEFT, -1000);
+				motor_setPWM(MOTOR_RIGHT, 1000);
 				//drive_lturnDeg(speed, 90);
 				break;
 			case 'S':
+				motor_setPWM(MOTOR_LEFT, -1000);
+				motor_setPWM(MOTOR_RIGHT, -1000);
 				//drive_bkDist(speed, 50);
 				break;
 			case 'D':
+				motor_setPWM(MOTOR_LEFT, 1000);
+				motor_setPWM(MOTOR_RIGHT, -1000);
 				//drive_rturnDeg(speed, 90);
-				break;	
+				break;
 			case '=':
-				speed += 2;
+				speed += 100;
 				printf_P(PSTR("Speed: %f\n"), speed);
 				break;
 			case '-':
-				speed -= 2;
+				speed -= 100;
 				printf_P(PSTR("Speed: %f\n"), speed);
 				break;
 			case '+':
@@ -120,37 +135,6 @@ void controlpanel_drive() {
 				//motorcontrol_setEnabled(false);
 				return;
 
-			case 'z':			// Does moonwalk forwards
-				speed = 40;
-				for (int i = 0; i < 20; i++) {
-					//drive_fd(speed);
-					_delay_ms(25);
-					//drive_rturn(speed);
-					_delay_ms(50);
-					//drive_fd(speed);
-					_delay_ms(25);
-					//drive_lturn(speed);
-					_delay_ms(50);
-				}
-				//drive_stop();
-				speed = 20;
-				break;
-
-			case 'Z':			// Does moonwalk backwards
-				speed = 100;
-				for (int i = 0; i < 20; i++) {
-					//drive_bk(speed);
-					_delay_ms(25);
-					//drive_rturn(speed);
-					_delay_ms(50);
-					//drive_bk(speed);
-					_delay_ms(25);
-					//drive_lturn(speed);
-					_delay_ms(50);
-				}
-				speed = 20;
-				break;
-
 			case 'm': {
 				/*float amax = drive_getTrajAmax();
 				printf_P(PSTR("Current amax: %.2f\n"), amax);
@@ -174,11 +158,108 @@ void controlpanel_drive() {
 					"  wasd  - Control robot\n"
 					"  space - Stop\n"
 					"  -=_+  - Adjust speed\n"
-					"  WASD  - Execute distance moves\n"
+					"  WASD  - Full speed movements\n"
 					"  c	 - Disable motor control\n"
 					"  Pp	 - Enable/Disable motor control debug\n"
-					"  zZ	 - Moonwalk (WIP)\n"
 					"  q	 - Back";
+				puts_P(msg);
+				break;
+		}
+	}
+}
+
+void controlpanel_sensor() {
+	while (true) {
+		char ch = controlpanel_promptChar("Sensors");
+		switch(ch) {
+			case 'e':
+				controlpanel_encoder();
+				break;
+			case 'm':
+				controlpanel_magnetometer();
+				break;
+			case 'q':
+				return;
+			case '?':
+				static const char msg[] PROGMEM =
+					"Sensor menu:\n"
+					"  e - Encoders\n"
+					"  m - Magnetometer\n"
+					"  q - Back\n";
+				puts_P(msg);
+				break;
+		}
+	}
+}
+
+void controlpanel_encoder() {
+	int ticks = 0;
+	while (true) {
+		char ch = controlpanel_promptChar("Encoders");
+		switch (ch) {
+			case 'p':
+				ticks = enc_get(0);
+				printf_P(PSTR("Ticks: %d "), ticks);
+				ticks = enc_get(1);
+				printf_P(PSTR("Ticks: %d\n"), ticks);
+				break;
+			case 'r':
+				enc_reset(0);
+				enc_reset(1);
+				break;
+			case 'q':
+				return;
+			case '?':
+				static const char msg[] PROGMEM =
+					"Encoder menu:\n"
+					"  p - position (ticks)\n"
+					"  r - Reset counter\n"
+					"  q - Back\n";
+				puts_P(msg);
+				break;
+		}
+	}
+}
+
+void controlpanel_magnetometer() {
+	MagReading dir;
+	float heading;
+	while (true) {
+		char ch = controlpanel_promptChar("Magnetometer");
+		switch (ch) {
+			case 'x':
+				dir = mag_getReading();
+				printf_P(PSTR("X: %d\n"), dir.x);
+				break;
+			case 'y':
+				dir = mag_getReading();
+				printf_P(PSTR("Y: %d\n"), dir.y);
+				break;
+			case 'z':
+				dir = mag_getReading();
+				printf_P(PSTR("Z: %d\n"), dir.z);
+				break;
+			case 'h':
+				heading = magfollow_getHeading();
+				printf_P(PSTR("Heading: %f\n"), heading);
+				break;
+			case 'l':
+				for (int i = 0; i < 100; i++) {
+					dir = mag_getReading();
+					printf_P(PSTR("%d %d %d\n"), dir.x, dir.y, dir.z);
+					_delay_ms(100);
+				}
+				break;
+			case 'q':
+				return;
+			case '?':
+				static const char msg[] PROGMEM =
+					"Encoder menu:\n"
+					"  x - x value\n"
+					"  y - y value\n"
+					"  z - z value\n"
+					"  h - heading\n"
+					"  q - Back\n";
 				puts_P(msg);
 				break;
 		}

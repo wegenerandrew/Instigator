@@ -117,7 +117,6 @@ static void receive(UARTNum num) {
 	uint8_t byte = uarts[num]->DATA;
 
 	if (byte == 27 || byte == '!' || byte == '`') {		// E-Stop is ESC key, !, or `
-		cli();
 		estop_reboot();
 	}
 

@@ -7,6 +7,8 @@
 #include <stdbool.h>
 #include "hardware/motor.h"
 #include "debug.h"
+#include "estop.h"
+#include "control/solenoidcontrol.h"
 
 #define SIGINT0VECT PORTF_INT0_vect
 
@@ -19,13 +21,21 @@ void estop_init(){
 	PORTF.INT0MASK = _BV(7);  //Set pin 7 in port F to be part of an interrupt
 }
 
+void estop_initCheck() {
+	if (estop_checkPin()) {
+		estop_killall();
+	}
+}
+
 _Bool estop_check() {
 	return estop;
 }
 
 void estop_killall() {
+	printf_P(PSTR("Estopped!"));
 	estop = true;
 	motor_estop();
+	solenoidcontrol_kill();
 	_delay_ms(10);
 	debug_setErrorLED();
 	cli();				// Disable all interrupts
@@ -36,8 +46,10 @@ void estop_killall() {
 }
 
 void estop_reboot() {
+	printf_P(PSTR("Rebooting!"));
 	estop = true;
 	motor_estop();
+	solenoidcontrol_kill();
 	_delay_ms(10);
 	debug_setErrorLED();
 	cli();				// Disable all interrupts
@@ -45,9 +57,22 @@ void estop_reboot() {
 	RST.CTRL = RST_SWRST_bm;	// software reset processor
 }
 
+bool estop_checkPin() {
+	uint8_t estop_check = PORTF.IN;
+	estop_check = estop_check >> 7;
+	if (estop_check == 0) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
 ISR(SIGINT0VECT){
 	PORTF.INTFLAGS= 0x01; //Clear the flag by writing a one to it 
-	estop_killall();
+	_delay_ms(10);
+	if (estop_checkPin()) {
+		estop_killall();
+	}
 }
 
 

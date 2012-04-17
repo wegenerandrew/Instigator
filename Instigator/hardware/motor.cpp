@@ -55,6 +55,10 @@ void motor_allOff() {
 	}
 }
 
+void motor_killMotor(uint8_t mot) {
+	(&TCF0.CCABUF)[mot] = 0;
+}
+
 int16_t motor_getPWM(uint8_t mot) {
 	int16_t PWM = (&TCF0.CCA)[port[mot]]; // CCx registers are also adjacent
 

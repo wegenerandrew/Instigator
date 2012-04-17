@@ -10,6 +10,7 @@
 #include "estop.h"
 #include "hardware/encoder.h"
 #include "hardware/motor.h"
+#include "hardware/mag.h"
 #include "tick.h"
 #include "uart.h"
 
@@ -42,5 +43,7 @@ void init_modules() {
 	enc_init();
 	motor_init();
 	motorcontrol_init();
+	mag_init();
 	controlpanel_init();
+	estop_initCheck();
 }

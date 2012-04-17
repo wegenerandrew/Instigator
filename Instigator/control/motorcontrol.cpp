@@ -17,7 +17,7 @@ volatile static bool debug;
 
 // Motor Directional Port
 static PORT_t &motordir_port = PORTD;
-static const int motordir_mask = _BV(0) | _BV(1) | _BV(2) | _BV(3);
+static const int motordir_mask = _BV(0) | _BV(1);
 
 struct MotorInfo {
 	PIDState pid;	// State of PID loop
@@ -56,14 +56,11 @@ void motorcontrol_setRPS(int motnum, float RPS) {
 	mot.RPS_desired = RPS;
 
 	// Set directional pins:
-	uint8_t pina = motnum*2;
-	uint8_t pinb = pina + 1;
+	uint8_t dirpin = motnum;
 	if (RPS >= 0) {
-		motordir_port.OUTSET = _BV(pina);
-		motordir_port.OUTCLR = _BV(pinb);
+		motordir_port.OUTSET = _BV(dirpin);
 	} else {
-		motordir_port.OUTCLR = _BV(pina);
-		motordir_port.OUTSET = _BV(pinb);
+		motordir_port.OUTCLR = _BV(dirpin);
 	}
 }
 

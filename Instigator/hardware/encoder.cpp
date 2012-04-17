@@ -1,11 +1,11 @@
 #include "hardware/encoder.h"
 #include <avr/io.h>
 
-static PORT_t &enc_port = PORTF;
-static const int encpins_mask = 0x00;	// TODO: Find out about pinouts on encoders
+static PORT_t &enc_port = PORTD;		// Was portf
+static const int encpins_mask = _BV(4) | _BV(5) | _BV(6) | _BV(7);	// TODO: Find out about pinouts on encoders
 
-static const int chan0mux = EVSYS_CHMUX_PORTF_PIN4_gc;
-static const int chan2mux = EVSYS_CHMUX_PORTF_PIN6_gc; // event channels are used in pairs for qdec
+static const int chan0mux = EVSYS_CHMUX_PORTD_PIN4_gc;
+static const int chan2mux = EVSYS_CHMUX_PORTD_PIN6_gc; // event channels are used in pairs for qdec
 
 static TC0_t &enctim0 = TCE0;
 static TC1_t &enctim1 = TCE1;
