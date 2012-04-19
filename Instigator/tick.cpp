@@ -1,29 +1,72 @@
 #include "control/motorcontrol.h"
+#include "control/magfollow.h"
+#include "control/odometry.h"
 #include "estop.h"
 #include "hardware/motor.h"
+#include "debug.h"
 #include "tick.h"
 #include <avr/interrupt.h>
+#include <avr/io.h>
+#include <stdio.h>
+#include <util/delay.h>
 
 #define TIMOVFVEC TCF1_OVF_vect
 
+
+static TC1_t &tim = TCF1;
+#define TIMCCAVEC TCF1_CCA_vect
+
+static volatile uint32_t tickcount;
+static volatile uint16_t ticklength;
+
+
 void tick_init() {
-	TCF1.CTRLA = TC_CLKSEL_DIV8_gc;	// 32 MHz clock / 8 = 4 MHz timer
-	TCF1.PER = TICK_TIMMAX;			// TICK_TIMHZ / (TICK_TIMHZ / TICK_HZ) = TICK_HZ timer
-	tick_resume();
+	tim.CTRLA = TC_CLKSEL_DIV64_gc; // 32Mhz / 8 = 4 Mhz timer (TICK_TIMHZ == 4E6)
+	tim.CTRLB = TC0_CCAEN_bm; // enable capture compare A
+	tim.PER = TICK_TIMMAX; // TICK_TIMHZ / (TICK_TIMHZ / TICK_HZ) = TICK_HZ timer
+	tim.CCABUF = 200; // 200 / 4Mhz = 50us CCA (for linesensor)
+	tick_resume(); // enable interrupts
 }
 
-void tick_resume() {
-	TCF1.INTCTRLA = TC_OVFINTLVL_LO_gc; // overflow interrupt enabled at low priority, for running the ticks
+
+void tick_wait() {
+	uint32_t t = tickcount;
+	while (t == tickcount) { }
 }
 
 void tick_suspend() {
-	TCF1.INTCTRLA = 0;
+	tim.INTCTRLA = 0;
+	tim.INTCTRLB = 0;
+}
+void tick_resume() {
+	tim.INTCTRLB = TC_CCAINTLVL_HI_gc; // capture compare A interrupt enabled at high priority, because the tick may not be completed before this goes off
+	tim.INTCTRLA = TC_OVFINTLVL_LO_gc; // overflow interrupt enabled at low priority, for running the ticks
+}
+
+
+uint16_t tick_getTimer() {
+	return tim.CNT;
+}
+
+uint32_t tick_getCount() {
+	return tickcount;
+}
+
+uint16_t tick_getLength() { // in uS
+	return (uint16_t)((uint32_t)ticklength * TICK_US / TICK_TIMMAX);
 }
 
 ISR(TIMOVFVEC) {
-	if (estop_check()) {		// If estopped, run estops
-		motor_estop();
-	} else {					// Else, run normal ticks
-		//motorcontrol_tick();
-	}	
+	uint16_t start = tim.CNT;
+	tickcount++;
+
+	magfollow_tick();
+	motor_tick();
+	odometry_tick();
+
+	ticklength = tim.CNT - start;
 }
+
+ISR(TIMCCAVEC) {
+}
+

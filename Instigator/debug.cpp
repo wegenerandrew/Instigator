@@ -3,7 +3,7 @@
 
 #include "uart.h"
 //#include "adc.h"
-#include "control/motor.h"
+#include "hardware/motor.h"
 #include "tick.h"
 #include "util.h"
 #include <avr/interrupt.h>
@@ -45,6 +45,10 @@ void debug_init() {
 
 void debug_setErrorLED() {
 	PORTR.OUTCLR = errorled_mask;
+}
+
+void debug_killErrorLED() {
+	PORTR.OUTSET = errorled_mask;
 }
 
 void debug_tick() {

@@ -200,7 +200,7 @@ AVRDUDE_PROGRAMMER = usbtiny
 #AVRDUDE_PROGRAMMER = ponyser
 
 # com1 = serial port. Use lpt1 to connect to parallel port.
-AVRDUDE_PORT = /dev/ttyUSB0 -b 57600
+AVRDUDE_PORT = /dev/ttyUSB0 -b 38400
 #AVRDUDE_PORT = COM1
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
@@ -380,7 +380,7 @@ gccversion :
 
 # Program the device.
 program: $(TARGET).hex $(TARGET).eep
-	python ../chip45boot2.py $(TARGET).hex
+	python ../chip45boot2.py $(TARGET).hex --baud=57600
 
 program_stk500: $(TARGET).hex $(TARGET).eep
 	$(STK500_PATH)\$(STK500) $(STK500_FLAGS) $(STK500_WRITE_FLASH)

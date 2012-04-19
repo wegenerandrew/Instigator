@@ -20,7 +20,7 @@ void init() {
 	init_interrupts();
 }
 
-void init_interrupts(){
+void init_interrupts() {
 	PMIC.CTRL = PMIC_HILVLEN_bm;	//Enable High level interrupts
 	PMIC.CTRL |= PMIC_MEDLVLEN_bm;	//Enable Medium level interrupts
 	PMIC.CTRL |= PMIC_LOLVLEN_bm;	//Enable Low level interrupts
@@ -39,11 +39,11 @@ void init_modules() {
 	estop_init();
 	uart_init();
 	debug_init();
-	tick_init();
-	enc_init();
 	motor_init();
-	motorcontrol_init();
+	enc_init();
+	tick_init();
 	mag_init();
+	motorcontrol_init();
 	controlpanel_init();
 	estop_initCheck();
 }

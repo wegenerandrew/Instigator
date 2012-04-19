@@ -12,9 +12,7 @@
 int main(void)
 {
 	init();
-	_delay_ms(1000);
-    while(1)
-    {
+    while (true) {
 		controlpanel();
     }
 }

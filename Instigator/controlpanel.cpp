@@ -16,6 +16,10 @@
 #include <stdio.h>
 
 static const char unknown_str[] PROGMEM = "Unknown. ? for help.";
+static const float turn_diff = 100;
+
+static float speed = 700;
+
 
 void controlpanel_init() {
 	printf_P(PSTR("Starting up\n"));
@@ -30,6 +34,9 @@ bool controlpanel() {
 			case 's':
 				controlpanel_sensor();
 				break;
+			case 'a':
+				controlpanel_autonomy();
+				break;
 			default:
 				puts_P(unknown_str);
 				break;
@@ -37,67 +44,103 @@ bool controlpanel() {
 				static const char msg[] PROGMEM =
 					"Control Panels:\n"
 					"  d - Drive"
-					"  s - Sensors";
+					"  s - Sensors"
+					"  a - Autonomy"
+					"  q - Quit";
 				puts_P(msg);
 				break;
 		}
 	}
 }
 
+void controlpanel_autonomy() {
+	while (true) {
+		char ch = controlpanel_promptChar("Autonomy");
+		switch (ch) {
+			case 'H': {			// Sets current heading of robot to prompted heading from user
+				float newheading;
+				controlpanel_prompt("Heading (deg)", "%f", &newheading);
+				magfollow_setHeading(degtorad(newheading));
+				break;
+			}
+			case 'M': {			// Prints out magnetometer calibrated heading
+				float heading = magfollow_getHeading();
+				heading = radtodeg(heading);
+				printf_P(PSTR("Mag Heading (deg): %f\n"), heading);
+				break;
+			}
+			case 'g': {
+				float dir;
+				controlpanel_prompt("Heading (deg)", "%f", &dir);
+				magfollow_start(speed, degtorad(dir));
+				break;
+			}
+			case ' ':
+				magfollow_stop();
+				break;
+			case 'q':
+				return;
+			case '?':
+				static const char msg[] PROGMEM =
+					"Control Panels:\n"
+					"  H - Set Heading\n"
+					"  M - Current Heading\n"
+					"  g - Magfollow\n"
+					" ' '- Stop\n"
+					"  q - Quit";
+				puts_P(msg);
+				break;
+		}
+	}
+}
+				
+
 void controlpanel_drive() {
-	float speed = 600;
 	while (true) {
 		char ch=controlpanel_promptChar("Drive");
 
 		switch (ch) {
 			case ' ':
-				motor_setPWM(MOTOR_LEFT, 0);
-				motor_setPWM(MOTOR_RIGHT, 0);
+				motor_ramp(0, 0);
 				//drive_stop();
 				break;
 			case 'x':
 				//drive_stop(DM_TRAJ);
 				break;
-
 			case 'w':
-				motor_setPWM(MOTOR_LEFT, speed);
-				motor_setPWM(MOTOR_RIGHT, speed);
+				motor_ramp(speed, speed);
 				//drive_fd(speed);
 				break;
 			case 'a':
-				motor_setPWM(MOTOR_LEFT, -speed);
-				motor_setPWM(MOTOR_RIGHT, speed);
+				motor_ramp(-(speed - turn_diff), (speed - turn_diff));
 				//drive_lturn(speed);
 				break;
 			case 's':
-				motor_setPWM(MOTOR_LEFT, -speed);
-				motor_setPWM(MOTOR_RIGHT, -speed);
+				motor_ramp(-speed, -speed);
 				//drive_bk(speed);
 				break;
 			case 'd':
-				motor_setPWM(MOTOR_LEFT, speed);
-				motor_setPWM(MOTOR_RIGHT, -speed);
+				motor_ramp((speed - turn_diff), -(speed - turn_diff));
 				//drive_rturn(speed);
 				break;
-
 			case 'W':
-				motor_setPWM(MOTOR_LEFT, 1000);
-				motor_setPWM(MOTOR_RIGHT, 1000);
+				motor_setPWM(MOTOR_LEFT, speed);
+				motor_setPWM(MOTOR_RIGHT, speed);
 				//drive_fdDist(speed, 50);
 				break;
 			case 'A':
-				motor_setPWM(MOTOR_LEFT, -1000);
-				motor_setPWM(MOTOR_RIGHT, 1000);
+				motor_setPWM(MOTOR_LEFT, -(speed - turn_diff));
+				motor_setPWM(MOTOR_RIGHT, (speed - turn_diff));
 				//drive_lturnDeg(speed, 90);
 				break;
 			case 'S':
-				motor_setPWM(MOTOR_LEFT, -1000);
-				motor_setPWM(MOTOR_RIGHT, -1000);
+				motor_setPWM(MOTOR_LEFT, -speed);
+				motor_setPWM(MOTOR_RIGHT, -speed);
 				//drive_bkDist(speed, 50);
 				break;
 			case 'D':
-				motor_setPWM(MOTOR_LEFT, 1000);
-				motor_setPWM(MOTOR_RIGHT, -1000);
+				motor_setPWM(MOTOR_LEFT, (speed - turn_diff));
+				motor_setPWM(MOTOR_RIGHT, -(speed - turn_diff));
 				//drive_rturnDeg(speed, 90);
 				break;
 			case '=':
@@ -224,6 +267,7 @@ void controlpanel_encoder() {
 void controlpanel_magnetometer() {
 	MagReading dir;
 	float heading;
+	float first_heading;
 	while (true) {
 		char ch = controlpanel_promptChar("Magnetometer");
 		switch (ch) {
@@ -244,11 +288,27 @@ void controlpanel_magnetometer() {
 				printf_P(PSTR("Heading: %f\n"), heading);
 				break;
 			case 'l':
-				for (int i = 0; i < 100; i++) {
+				motor_setPWM(MOTOR_LEFT, -600);
+				motor_setPWM(MOTOR_RIGHT, 600);
+				first_heading = magfollow_getHeading();
+				heading = magfollow_getHeading();
+				while (sign(heading - first_heading)*(heading - first_heading) < 1) {
 					dir = mag_getReading();
 					printf_P(PSTR("%d %d %d\n"), dir.x, dir.y, dir.z);
-					_delay_ms(100);
+					heading = magfollow_getHeading();
 				}
+				while (heading != first_heading) {
+					heading = magfollow_getHeading();
+					dir = mag_getReading();
+					printf_P(PSTR("%d %d %d\n"), dir.x, dir.y, dir.z);
+				}
+				while (sign(heading - first_heading)*(heading - first_heading) < 1) {
+					dir = mag_getReading();
+					printf_P(PSTR("%d %d %d\n"), dir.x, dir.y, dir.z);
+					heading = magfollow_getHeading();
+				}
+				motor_setPWM(MOTOR_LEFT, 0);
+				motor_setPWM(MOTOR_RIGHT, 0);
 				break;
 			case 'q':
 				return;
@@ -259,6 +319,7 @@ void controlpanel_magnetometer() {
 					"  y - y value\n"
 					"  z - z value\n"
 					"  h - heading\n"
+					"  l - calibrate\n"
 					"  q - Back\n";
 				puts_P(msg);
 				break;

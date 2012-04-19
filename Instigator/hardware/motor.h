@@ -4,18 +4,21 @@
 #include <stdint.h>
 
 enum Motor {
+	MOTOR_SOLENOID,
+	MOTOR_UNUSED,
 	MOTOR_LEFT,
-	MOTOR_RIGHT,
-	MOTOR_SOLENOID
+	MOTOR_RIGHT
 };
 
 static const int motor_count = 4;
 static const int16_t motor_maxPWM = 1024;
 
 void motor_init();
+void motor_ramp(int16_t newPWML, int16_t newPWMR);
+void motor_goPWM(int16_t newPWML, int16_t newPWMR);
 void motor_setPWM(uint8_t mot, int16_t PWM);
 int16_t motor_getPWM(uint8_t mot);
-inline void motor_off(uint8_t mot) { motor_setPWM(mot, 0); }
+void motor_off(uint8_t mot);
 void motor_allOff();
 void motor_killMotor(uint8_t mot);
 void motor_estop();

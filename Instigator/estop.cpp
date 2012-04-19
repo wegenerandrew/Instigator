@@ -13,11 +13,11 @@
 #define SIGINT0VECT PORTF_INT0_vect
 
 static volatile bool estop = false;
-// TODO: redo estop
+
 void estop_init(){
 	PORTF.DIRSET  &= _BV(7);		 //Set pin 7 as input leave pwm pins alone
 	PORTF.INTCTRL  = TC_OVFINTLVL_HI_gc;		// EStop set to High Priority
-	PORTF.PIN7CTRL = PORT_ISC_FALLING_gc | PORT_OPC_PULLUP_gc;		//Set pin 7 to be pulled up and interupt to occur on the falling edge
+	PORTF.PIN7CTRL = PORT_ISC_RISING_gc | PORT_OPC_PULLUP_gc;		//Set pin 7 to be pulled up and interupt to occur on the falling edge
 	PORTF.INT0MASK = _BV(7);  //Set pin 7 in port F to be part of an interrupt
 }
 
@@ -32,7 +32,6 @@ _Bool estop_check() {
 }
 
 void estop_killall() {
-	printf_P(PSTR("Estopped!"));
 	estop = true;
 	motor_estop();
 	solenoidcontrol_kill();
@@ -42,11 +41,14 @@ void estop_killall() {
 //	PMIC.CTRL = 0x00;	// Disable High, Medium, and Low level interrupts
 //	CPU_CCP = CCP_IOREG_gc;		// give change protection signature
 //	RST.CTRL = RST_SWRST_bm;	// software reset processor
-	while(true) { }
+	while (true) {
+		if (!estop_checkPin()) {
+			estop_reboot();
+		}
+	}
 }
 
 void estop_reboot() {
-	printf_P(PSTR("Rebooting!"));
 	estop = true;
 	motor_estop();
 	solenoidcontrol_kill();
@@ -60,7 +62,7 @@ void estop_reboot() {
 bool estop_checkPin() {
 	uint8_t estop_check = PORTF.IN;
 	estop_check = estop_check >> 7;
-	if (estop_check == 0) {
+	if (estop_check == 1) {
 		return true;
 	} else {
 		return false;
@@ -68,8 +70,7 @@ bool estop_checkPin() {
 }
 
 ISR(SIGINT0VECT){
-	PORTF.INTFLAGS= 0x01; //Clear the flag by writing a one to it 
-	_delay_ms(10);
+	PORTF.INTFLAGS= 0x01; //Clear the flag by writing a one to it
 	if (estop_checkPin()) {
 		estop_killall();
 	}

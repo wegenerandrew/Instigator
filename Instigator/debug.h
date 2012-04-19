@@ -5,6 +5,7 @@
 
 void debug_init();
 void debug_setErrorLED();
+void debug_killErrorLED();
 
 void debug_resetTimer();
 uint16_t debug_getTimer(); // in us

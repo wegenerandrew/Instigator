@@ -1,5 +1,6 @@
 #include "control/drive.h"
 #include "control/motorcontrol.h"
+#include "hardware/motor.h"
 #include "hardware/encoder.h"
 #include "util.h"
 
@@ -7,9 +8,10 @@ static const float wheel_circumference	= 1;		// In centimeters. TODO: measure!
 static const float wheelbase_radius	= 1;		// In centimeters. TODO: measure!
 
 void drive(float lvel, float rvel) {		// Velocities in centimeters/second.
-	motorcontrol_setRPS(MOTOR_LEFT, lvel/wheel_circumference);
-	motorcontrol_setRPS(MOTOR_RIGHT, rvel/wheel_circumference);
-	motorcontrol_setEnabled(true);
+//	motorcontrol_setRPS(MOTOR_LEFT, lvel/wheel_circumference);
+//	motorcontrol_setRPS(MOTOR_RIGHT, rvel/wheel_circumference);
+//	motorcontrol_setEnabled(true);
+	motor_ramp(lvel, rvel);
 }
 
 void drive_dist(float lvel, float rvel, float dist) {

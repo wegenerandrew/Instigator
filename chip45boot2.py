@@ -12,8 +12,8 @@ parser = argparse.ArgumentParser()
 
 parser = argparse.ArgumentParser(description='Program a microcontroller running the chip45boot2 bootloader')
 parser.add_argument('-p', '--port',
-    help='open port at specified path (default: /dev/ttyACM0)',
-    type=str, action='store', default='/dev/ttyACM0', dest='port')
+    help='open port at specified path (default: /dev/ttyUSB0)',
+    type=str, action='store', default='/dev/ttyUSB0', dest='port')
 parser.add_argument('-b', '--baudrate',
     help='communicate at specified baud rate (default: 115200)',
     type=int, action='store', default=115200, dest='baudrate')

@@ -2,7 +2,7 @@
 #include <avr/io.h>
 
 static PORT_t &enc_port = PORTD;		// Was portf
-static const int encpins_mask = _BV(4) | _BV(5) | _BV(6) | _BV(7);	// TODO: Find out about pinouts on encoders
+static const int encpins_mask = 0xF0;
 
 static const int chan0mux = EVSYS_CHMUX_PORTD_PIN4_gc;
 static const int chan2mux = EVSYS_CHMUX_PORTD_PIN6_gc; // event channels are used in pairs for qdec
@@ -19,7 +19,7 @@ void enc_init() {
 	EVSYS.CH0CTRL = EVSYS.CH2CTRL = EVSYS_QDEN_bm | EVSYS_DIGFILT_8SAMPLES_gc; // turn on quadrature decoding, and digital filtering
 
 	enctim0.CTRLD = TC_EVACT_QDEC_gc | TC_EVSEL_CH0_gc; // set up timers for quadrature decoding from the correct event channels
-	enctim1.CTRLD = TC_EVACT_QDEC_gc | TC_EVSEL_CH2_gc;
+	enctim1.CTRLD = TC_EVACT_QDEC_gc | TC_EVSEL_CH2_gc;// was ffff \/
 	enctim0.PER = enctim1.PER = 0xFFFF; // max out the period so we use all 16 bits before overflowing
 	enctim0.CTRLA = enctim1.CTRLA = TC_CLKSEL_DIV1_gc; // div1 clock selection required for qdec to work
 }
