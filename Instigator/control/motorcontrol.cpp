@@ -16,7 +16,7 @@ volatile static bool enabled;
 volatile static bool debug;
 
 // Motor Directional Port
-//static PORT_t &motordir_port = PORTD;
+//static PORT_t &motordir_port = PORTB;
 //static const int motordir_mask = _BV(0) | _BV(1);
 
 struct MotorInfo {

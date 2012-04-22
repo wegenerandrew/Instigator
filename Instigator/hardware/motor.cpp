@@ -14,8 +14,8 @@ static const int ctrlpins_mask = 0xFF;
 
 static const int PWMpins_mask = 0x0F;
 
-static PORT_t &motordir_port = PORTD;
-static const int motordir_mask = _BV(0) | _BV(1);
+static PORT_t &motordir_port = PORTB;
+static const int motordir_mask = _BV(0) | _BV(1) | _BV(2) | _BV(3);
 
 static const uint8_t port[4] = {0, 1, 2, 3}; // LRDF
 
@@ -55,14 +55,19 @@ void motor_setPWM(uint8_t mot, int16_t PWM) {
 		PORTK.OUTCLR = in2pin_mask;
 		PORTK.OUTSET = in1pin_mask;
 		(&TCF0.CCABUF)[port[mot]] = PWM;
-
-		motordir_port.OUTCLR = _BV(mot-2);		// Set directional port forwards
+		if (mot == MOTOR_LEFT || mot == MOTOR_RIGHT) {
+			motordir_port.OUTCLR = _BV((mot-2)*2);		// Set directional ports for forwards
+			motordir_port.OUTSET = _BV(((mot-2)*2)+1);
+		}
 	} else {
 		PORTK.OUTCLR = in1pin_mask;
 		PORTK.OUTSET = in2pin_mask;
 		(&TCF0.CCABUF)[port[mot]] = -PWM;
 
-		motordir_port.OUTSET = _BV(mot-2);		// Set directional port backwards
+		if (mot == MOTOR_LEFT || mot == MOTOR_RIGHT) {
+			motordir_port.OUTSET = _BV((mot-2)*2);		// Set directional ports for backwards
+			motordir_port.OUTCLR = _BV(((mot-2)*2)+1);
+		}
 	}
 }
 
@@ -124,18 +129,18 @@ void motor_off(uint8_t mot) {
 void motor_tick() {
 	if (lramp) {
 		if (currPWML < desPWML) {
-			motor_setPWM(MOTOR_LEFT, currPWML + 100);
+			motor_setPWM(MOTOR_LEFT, currPWML + 50);
 		} else if (currPWML > desPWML) {
-			motor_setPWM(MOTOR_LEFT, currPWML - 100);
+			motor_setPWM(MOTOR_LEFT, currPWML - 50);
 		} else {
 			lramp = false;
 		}
 	}
 	if (rramp) {
 		if (currPWMR < desPWMR) {
-			motor_setPWM(MOTOR_RIGHT, currPWMR + 100);
+			motor_setPWM(MOTOR_RIGHT, currPWMR + 50);
 		} else if (currPWMR > desPWMR) {
-			motor_setPWM(MOTOR_RIGHT, currPWMR - 100);
+			motor_setPWM(MOTOR_RIGHT, currPWMR - 50);
 		} else {
 			rramp = false;
 		}

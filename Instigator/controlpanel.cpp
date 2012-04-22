@@ -5,6 +5,7 @@
 #include "hardware/motor.h"
 #include "hardware/mag.h"
 #include "hardware/encoder.h"
+#include "hardware/sonar.h"
 #include "tick.h"
 #include "util.h"
 #include <avr/io.h>
@@ -37,6 +38,9 @@ bool controlpanel() {
 			case 'a':
 				controlpanel_autonomy();
 				break;
+			case 'c':
+				controlpanel_calibrate();
+				break;
 			default:
 				puts_P(unknown_str);
 				break;
@@ -46,6 +50,7 @@ bool controlpanel() {
 					"  d - Drive"
 					"  s - Sensors"
 					"  a - Autonomy"
+					"  c - Calibrate"
 					"  q - Quit";
 				puts_P(msg);
 				break;
@@ -54,27 +59,38 @@ bool controlpanel() {
 }
 
 void controlpanel_autonomy() {
+	float follow = 0;
 	while (true) {
 		char ch = controlpanel_promptChar("Autonomy");
 		switch (ch) {
-			case 'H': {			// Sets current heading of robot to prompted heading from user
+			case 'c': {			// Sets current heading of robot to prompted heading from user
 				float newheading;
 				controlpanel_prompt("Heading (deg)", "%f", &newheading);
 				magfollow_setHeading(degtorad(newheading));
 				break;
 			}
-			case 'M': {			// Prints out magnetometer calibrated heading
+			case 'h': {			// Prints out magnetometer calibrated heading
 				float heading = magfollow_getHeading();
 				heading = radtodeg(heading);
 				printf_P(PSTR("Mag Heading (deg): %f\n"), heading);
 				break;
 			}
-			case 'g': {
-				float dir;
-				controlpanel_prompt("Heading (deg)", "%f", &dir);
-				magfollow_start(speed, degtorad(dir));
+			case 'w': {
+				controlpanel_prompt("Heading (deg)", "%f", &follow);
+				magfollow_start(speed, anglewrap(degtorad(follow)));
+				printf_P(PSTR("Following at: %f\n"), follow);
 				break;
 			}
+			case 'a':
+				follow = follow - 5;
+				magfollow_start(speed, anglewrap(degtorad(follow)));
+				printf_P(PSTR("Following at: %f\n"), follow);
+				break;
+			case 'd':
+				follow = follow + 5;
+				magfollow_start(speed, anglewrap(degtorad(follow)));
+				printf_P(PSTR("Following at: %f\n"), follow);
+				break;
 			case ' ':
 				magfollow_stop();
 				break;
@@ -83,9 +99,11 @@ void controlpanel_autonomy() {
 			case '?':
 				static const char msg[] PROGMEM =
 					"Control Panels:\n"
-					"  H - Set Heading\n"
-					"  M - Current Heading\n"
-					"  g - Magfollow\n"
+					"  c - Set Heading\n"
+					"  h - Current Heading\n"
+					"  w - Magfollow\n"
+					"  a - Shift following left\n"
+					"  d - Shift following right\n"
 					" ' '- Stop\n"
 					"  q - Quit";
 				puts_P(msg);
@@ -96,6 +114,8 @@ void controlpanel_autonomy() {
 				
 
 void controlpanel_drive() {
+	int16_t steer = 0;
+	bool fwd = true;
 	while (true) {
 		char ch=controlpanel_promptChar("Drive");
 
@@ -108,40 +128,46 @@ void controlpanel_drive() {
 				//drive_stop(DM_TRAJ);
 				break;
 			case 'w':
+				fwd = true;
+				steer = 0;
+				motor_ramp(speed, speed);
+				break;
+			case 'a':
+				steer = steer - 50;
+				if (fwd) {
+					motor_ramp(speed + steer, speed - steer);
+				} else {
+					motor_ramp(-speed + steer, -speed - steer);
+				}
+				break;
+			case 's':
+				fwd = false;
+				steer = 0;
+				motor_ramp(-speed, -speed);
+				break;
+			case 'd':
+				steer = steer + 50;
+				if (fwd) {
+					motor_ramp(speed + steer, speed - steer);
+				} else {
+					motor_ramp(-speed + steer, -speed - steer);
+				}
+				break;
+			case 'W':
 				motor_ramp(speed, speed);
 				//drive_fd(speed);
 				break;
-			case 'a':
+			case 'A':
 				motor_ramp(-(speed - turn_diff), (speed - turn_diff));
 				//drive_lturn(speed);
 				break;
-			case 's':
+			case 'S':
 				motor_ramp(-speed, -speed);
 				//drive_bk(speed);
 				break;
-			case 'd':
+			case 'D':
 				motor_ramp((speed - turn_diff), -(speed - turn_diff));
 				//drive_rturn(speed);
-				break;
-			case 'W':
-				motor_setPWM(MOTOR_LEFT, speed);
-				motor_setPWM(MOTOR_RIGHT, speed);
-				//drive_fdDist(speed, 50);
-				break;
-			case 'A':
-				motor_setPWM(MOTOR_LEFT, -(speed - turn_diff));
-				motor_setPWM(MOTOR_RIGHT, (speed - turn_diff));
-				//drive_lturnDeg(speed, 90);
-				break;
-			case 'S':
-				motor_setPWM(MOTOR_LEFT, -speed);
-				motor_setPWM(MOTOR_RIGHT, -speed);
-				//drive_bkDist(speed, 50);
-				break;
-			case 'D':
-				motor_setPWM(MOTOR_LEFT, (speed - turn_diff));
-				motor_setPWM(MOTOR_RIGHT, -(speed - turn_diff));
-				//drive_rturnDeg(speed, 90);
 				break;
 			case '=':
 				speed += 100;
@@ -221,6 +247,9 @@ void controlpanel_sensor() {
 			case 'm':
 				controlpanel_magnetometer();
 				break;
+			case 's':
+				controlpanel_sonar();
+				break;
 			case 'q':
 				return;
 			case '?':
@@ -228,6 +257,7 @@ void controlpanel_sensor() {
 					"Sensor menu:\n"
 					"  e - Encoders\n"
 					"  m - Magnetometer\n"
+					"  s - Sonar\n"
 					"  q - Back\n";
 				puts_P(msg);
 				break;
@@ -327,6 +357,56 @@ void controlpanel_magnetometer() {
 	}
 }
 
+void controlpanel_sonar() {
+	while (true) {
+		char ch = controlpanel_promptChar("Sonars");
+		switch (ch) {
+			case 'd':
+				printf_P(PSTR("LDist: %f, MDist: %f, RDist: %f\n"), sonar_getDist(LEFT_SONAR), sonar_getDist(MIDDLE_SONAR), sonar_getDist(RIGHT_SONAR));
+				break;
+			case 't':
+				printf_P(PSTR("Timer: %f\n"), sonar_getTimer());
+				break;
+			case 'q':
+				return;
+			case '?':
+				static const char msg[] PROGMEM =
+					"Encoder menu:\n"
+					"  d - Distance (cm)\n"
+					"  t - Timer\n"
+					"  q - Back\n";
+				puts_P(msg);
+				break;
+		}
+	}
+}
+
+void controlpanel_calibrate() {
+	PIDGains newgains;
+	while (true) {
+		char ch = controlpanel_promptChar("Calibrate");
+		switch (ch) {
+			case 'm':
+				if (controlpanel_promptGains("magfollow", magfollow_getGains(), newgains)) {
+					magfollow_setGains(newgains);
+					printf_P(PSTR("Gains set!\n"));
+				} else {
+					printf_P(PSTR("Cancelled.\n"));
+				}
+				break;
+			case 'q':
+				return;
+			case '?':
+				static const char msg[] PROGMEM =
+					"Calibrate Menu:\n"
+					"  m - Magnetometer PID\n"
+					"  q - Back\n";
+				puts_P(msg);
+				break;
+		}
+	}
+}
+
 int controlpanel_prompt(const char *prompt, const char *fmt, ...) {
 	va_list argp;
 	va_start(argp, fmt);
@@ -344,4 +424,21 @@ char controlpanel_promptChar(const char *prompt) {
 	char ch = getchar();
 	putchar('\n');
 	return ch;
+}
+
+bool controlpanel_promptGains(const char *name, const PIDGains &curgains, PIDGains &gains) {
+	printf_P(PSTR("Setting gains for %s\n"), name);
+	printf_P(PSTR("Current gains: P %.4f I %.4f D %.4f MaxI %.4f\n"), curgains.p, curgains.i, curgains.d, curgains.maxi);
+	
+	if (controlpanel_prompt("P", "%f", &gains.p) != 1)
+		gains.p = curgains.p;
+	if (controlpanel_prompt("I", "%f", &gains.i) != 1)
+		gains.i = curgains.i;
+	if (controlpanel_prompt("D", "%f", &gains.d) != 1)
+		gains.d = curgains.d;
+	if (controlpanel_prompt("MaxI", "%f", &gains.maxi) != 1)
+		gains.maxi = curgains.maxi;
+		
+	printf_P(PSTR("New gains: P %.4f I %.4f D %.4f MaxI %.4f\n"), gains.p, gains.i, gains.d, gains.maxi);
+	return controlpanel_promptChar("Ok? [y/n]") == 'y';
 }

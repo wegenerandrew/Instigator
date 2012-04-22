@@ -9,5 +9,5 @@ void odometry_setPos(float newx, float newy) {
 }
 
 void odometry_tick() {
-	
+	// get ticks from encoders, calc new pos.
 }

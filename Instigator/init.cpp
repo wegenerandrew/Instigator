@@ -11,6 +11,7 @@
 #include "hardware/encoder.h"
 #include "hardware/motor.h"
 #include "hardware/mag.h"
+#include "hardware/sonar.h"
 #include "tick.h"
 #include "uart.h"
 
@@ -43,6 +44,7 @@ void init_modules() {
 	enc_init();
 	tick_init();
 	mag_init();
+	sonar_init();
 	motorcontrol_init();
 	controlpanel_init();
 	estop_initCheck();

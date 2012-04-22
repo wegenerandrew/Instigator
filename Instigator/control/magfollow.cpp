@@ -7,6 +7,9 @@
 #include "debug.h"
 #include "util.h"
 #include <math.h>
+#include <string.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 static volatile bool enabled = false;
 static volatile float heading;						// heading in radians
@@ -54,11 +57,12 @@ void magfollow_tick() {
 
 	PIDDebug piddebug;
 	float out = pid_update(pidstate, pidgains, error_filter, TICK_DT, &piddebug);
+	printf("%f\n", out);
 
 	if (debug)
 		pid_printDebug(out, error_filter, piddebug);
 	
-	drive_steer(out, vel);
+	drive_steer(10*out, vel);
 
 }
 

@@ -56,6 +56,7 @@ uint16_t tick_getLength() { // in uS
 	return (uint16_t)((uint32_t)ticklength * TICK_US / TICK_TIMMAX);
 }
 
+
 ISR(TIMOVFVEC) {
 	uint16_t start = tim.CNT;
 	tickcount++;
