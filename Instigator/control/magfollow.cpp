@@ -1,11 +1,12 @@
 #include "control/magfollow.h"
-#include "hardware/mag.h"
-#include "tick.h"
 #include "control/pid.h"
 #include "control/drive.h"
 #include "control/motorcontrol.h"
-#include "debug.h"
+#include "control/tick.h"
+#include "debug/debug.h"
+#include "hardware/mag.h"
 #include "util.h"
+
 #include <math.h>
 #include <string.h>
 #include <stdarg.h>

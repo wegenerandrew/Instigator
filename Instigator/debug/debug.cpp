@@ -1,11 +1,10 @@
 #include "debug.h"
-
-
 #include "uart.h"
 //#include "adc.h"
 #include "hardware/motor.h"
 #include "tick.h"
 #include "util.h"
+
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <avr/pgmspace.h>
@@ -15,7 +14,8 @@
 #include <stdarg.h>
 #include <stdint.h>
 
-static const int errorled_mask = _BV(1);
+static PORT_t debugled_port = PORTJ;
+static const int debugled_mask = _BV(0) | _BV(1) | _BV(2) | _BV(3) | _BV(4);
 
 // debug timer
 static TC1_t &tim = TCC1;
@@ -24,7 +24,7 @@ static TC1_t &tim = TCC1;
 static bool echo_enabled = true;
 
 // battery monitor
-//static uint8_t batterycnt;
+static uint8_t batterycnt;
 
 // stdio stuff
 static int put(char ch, FILE* file);
@@ -32,8 +32,8 @@ static int get(FILE* file);
 static FILE stdinout;
 
 void debug_init() {
-	PORTR.DIRSET = errorled_mask;
-	PORTR.OUTSET = errorled_mask;
+	debugled_port.DIRSET = debugled_mask;
+	debugled_port.OUTSET = debugled_mask;
 	
 	tim.CTRLA = TC_CLKSEL_DIV64_gc; // 32Mhz / 64 = .5 Mhz timer
 	tim.PER = 0xFFFF; // 1Mhz / 65536 = 65ms
@@ -43,21 +43,21 @@ void debug_init() {
 	stdout = &stdinout;
 }
 
-void debug_setErrorLED() {
-	PORTR.OUTCLR = errorled_mask;
-}
-
-void debug_killErrorLED() {
-	PORTR.OUTSET = errorled_mask;
+void debug_setLED(LED led, bool on) {
+	if (on) {
+		debugled_port.OUTSET = _BV(led);
+	} else {
+		debugled_port.OUTCLR = _BV(led);
+	}
 }
 
 void debug_tick() {
-//	if (adc_getBattery() < 10.5) {
-//		if (++batterycnt >= 100)
-//			debug_halt("STOP USING THE ROBOT CHARGE ME BRO");
-//	} else {
-//		batterycnt = 0;
-//	}
+/*	if (adc_getBattery() < 10.5) {
+		if (++batterycnt >= 100)
+			debug_halt("LOW BATTERY");
+	} else {
+		batterycnt = 0;
+	}*/
 }
 
 static int put(char ch, FILE* file) {
@@ -120,11 +120,11 @@ void debug_halt(const char *reason) {
 	tick_suspend();
 	motor_allOff();
 
-//	bool led=false;
+	bool led=false;
 	while (true) {
-		printf_P("Halted like a boss. %s\n", reason);
-//		debug_setLED(BOARD_LED, led);
-//		led = !led;
+		printf_P("Halted: %s\n", reason);
+		debug_setLED(LED_BATTERY, led);
+		led = !led;
 		_delay_ms(1000);
 	}
 }

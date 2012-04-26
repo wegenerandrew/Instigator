@@ -1,19 +1,21 @@
 #include "init.h"
+#include "debug/controlpanel.h"
+#include "debug/debug.h"
+#include "debug/uart.h"
+#include "control/motorcontrol.h"
+#include "control/tick.h"
+#include "hardware/estop.h"
+#include "hardware/encoder.h"
+#include "hardware/motor.h"
+#include "hardware/mag.h"
+#include "hardware/sonar.h"
+#include "hardware/solenoid.h"
+
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include <stdio.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
-#include "controlpanel.h"
-#include "control/motorcontrol.h"
-#include "debug.h"
-#include "estop.h"
-#include "hardware/encoder.h"
-#include "hardware/motor.h"
-#include "hardware/mag.h"
-#include "hardware/sonar.h"
-#include "tick.h"
-#include "uart.h"
 
 void init() {
 	init_clocks();

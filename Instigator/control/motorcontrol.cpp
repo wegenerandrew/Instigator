@@ -1,10 +1,11 @@
 #include "control/motorcontrol.h"
 #include "control/pid.h"
-#include "debug.h"
+#include "control/tick.h"
+#include "debug/debug.h"
 #include "hardware/encoder.h"
 #include "hardware/motor.h"
-#include "tick.h"
 #include "util.h"
+
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <math.h>
@@ -16,7 +17,7 @@ volatile static bool enabled;
 volatile static bool debug;
 
 // Motor Directional Port
-//static PORT_t &motordir_port = PORTB;
+//static PORT_t &motordir_port = PORTH;
 //static const int motordir_mask = _BV(0) | _BV(1);
 
 struct MotorInfo {

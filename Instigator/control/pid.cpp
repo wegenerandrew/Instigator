@@ -1,5 +1,6 @@
 #include "control/pid.h"
-#include "debug.h"
+#include "debug/debug.h"
+
 #include <math.h>
 
 void pid_initState(PIDState &state) {

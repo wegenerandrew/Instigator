@@ -3,9 +3,16 @@
 
 #include <stdint.h>
 
+enum LED {
+	LED_ERROR,
+	LED_ESTOP,
+	LED_BATTERY,
+	LED_OTHER3,
+	LED_OTHER4
+};
+
 void debug_init();
-void debug_setErrorLED();
-void debug_killErrorLED();
+void debug_setLED(LED led, bool on);
 
 void debug_resetTimer();
 uint16_t debug_getTimer(); // in us

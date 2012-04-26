@@ -1,17 +1,17 @@
 #include "control/motorcontrol.h"
 #include "control/magfollow.h"
 #include "control/odometry.h"
-#include "estop.h"
+#include "control/tick.h"
+#include "debug/debug.h"
+#include "hardware/estop.h"
 #include "hardware/motor.h"
-#include "debug.h"
-#include "tick.h"
+
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <stdio.h>
 #include <util/delay.h>
 
 #define TIMOVFVEC TCF1_OVF_vect
-
 
 static TC1_t &tim = TCF1;
 #define TIMCCAVEC TCF1_CCA_vect

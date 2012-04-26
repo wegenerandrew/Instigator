@@ -1,13 +1,15 @@
-#include "controlpanel.h"
 #include "control/drive.h"
 #include "control/magfollow.h"
-#include "debug.h"
+#include "control/weedwhacker.h"
+#include "control/tick.h"
+#include "debug/debug.h"
+#include "debug/controlpanel.h"
 #include "hardware/motor.h"
 #include "hardware/mag.h"
 #include "hardware/encoder.h"
 #include "hardware/sonar.h"
-#include "tick.h"
 #include "util.h"
+
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include <util/delay.h>
@@ -47,10 +49,10 @@ bool controlpanel() {
 			case '?':
 				static const char msg[] PROGMEM =
 					"Control Panels:\n"
-					"  d - Drive"
-					"  s - Sensors"
-					"  a - Autonomy"
-					"  c - Calibrate"
+					"  d - Drive\n"
+					"  s - Sensors\n"
+					"  a - Autonomy\n"
+					"  c - Calibrate\n"
 					"  q - Quit";
 				puts_P(msg);
 				break;
@@ -169,6 +171,12 @@ void controlpanel_drive() {
 				motor_ramp((speed - turn_diff), -(speed - turn_diff));
 				//drive_rturn(speed);
 				break;
+			case 'k':
+				weedwhacker_kill();
+				break;
+			case 'K':
+				weedwhacker_start();
+				break;
 			case '=':
 				speed += 100;
 				printf_P(PSTR("Speed: %f\n"), speed);
@@ -226,6 +234,8 @@ void controlpanel_drive() {
 					"Drive commands:\n"
 					"  wasd  - Control robot\n"
 					"  space - Stop\n"
+					"  k	 - Weedwhacker Kill\n"
+					"  K	 - Weedwhacker Start\n"
 					"  -=_+  - Adjust speed\n"
 					"  WASD  - Full speed movements\n"
 					"  c	 - Disable motor control\n"

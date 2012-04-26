@@ -1,4 +1,5 @@
 #include "hardware/encoder.h"
+
 #include <avr/io.h>
 
 static PORT_t &enc_port = PORTD;		// Was portf
