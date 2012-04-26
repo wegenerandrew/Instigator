@@ -6,4 +6,8 @@
 *.hex
 *.lss
 *.elf
-FlamingGrape/.dep
+*.png
+*.pdf
+.dep
+TODO
+iox128a1.h
