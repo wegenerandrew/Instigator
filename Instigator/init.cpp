@@ -43,6 +43,7 @@ void init_modules() {
 	uart_init();
 	debug_init();
 	motor_init();
+	solenoid_init();
 	enc_init();
 	tick_init();
 	mag_init();
