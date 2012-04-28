@@ -1,8 +1,8 @@
-#include "debug.h"
-#include "uart.h"
-//#include "adc.h"
+#include "control/tick.h"
+#include "debug/debug.h"
+#include "debug/uart.h"
+#include "hardware/adc.h"
 #include "hardware/motor.h"
-#include "tick.h"
 #include "util.h"
 
 #include <avr/interrupt.h>
@@ -51,12 +51,12 @@ void debug_setLED(LED led, bool on) {
 }
 
 void debug_tick() {
-/*	if (adc_getBattery() < 10.5) {
+	if (adc_sampleBattery() < 10.5) {
 		if (++batterycnt >= 100)
 			debug_halt("LOW BATTERY");
 	} else {
 		batterycnt = 0;
-	}*/
+	}
 }
 
 static int put(char ch, FILE* file) {

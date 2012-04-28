@@ -4,6 +4,7 @@
 #include "debug/uart.h"
 #include "control/motorcontrol.h"
 #include "control/tick.h"
+#include "hardware/adc.h"
 #include "hardware/estop.h"
 #include "hardware/encoder.h"
 #include "hardware/motor.h"
@@ -41,6 +42,7 @@ void init_clocks() {
 void init_modules() {
 	estop_init();
 	uart_init();
+	adc_init();
 	debug_init();
 	motor_init();
 	solenoid_init();
