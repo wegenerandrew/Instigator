@@ -114,6 +114,9 @@ void controlpanel_autonomy() {
 					"  q - Quit";
 				puts_P(msg);
 				break;
+			default:
+				puts_P(unknown_str);
+				break;
 		}
 	}
 }
@@ -308,7 +311,7 @@ void controlpanel_LED() {
 void controlpanel_sensor() {
 	while (true) {
 		char ch = controlpanel_promptChar("Sensors");
-		switch(ch) {
+		switch (ch) {
 			case 'e':
 				controlpanel_encoder();
 				break;
@@ -328,6 +331,9 @@ void controlpanel_sensor() {
 					"  s - Sonar\n"
 					"  q - Back\n";
 				puts_P(msg);
+				break;
+			default:
+				puts_P(unknown_str);
 				break;
 		}
 	}
@@ -357,6 +363,9 @@ void controlpanel_encoder() {
 					"  r - Reset counter\n"
 					"  q - Back\n";
 				puts_P(msg);
+				break;
+			default:
+				puts_P(unknown_str);
 				break;
 		}
 	}
@@ -421,6 +430,9 @@ void controlpanel_magnetometer() {
 					"  q - Back\n";
 				puts_P(msg);
 				break;
+			default:
+				puts_P(unknown_str);
+				break;
 		}
 	}
 }
@@ -444,6 +456,9 @@ void controlpanel_sonar() {
 					"  t - Timer\n"
 					"  q - Back\n";
 				puts_P(msg);
+				break;
+			default:
+				puts_P(unknown_str);
 				break;
 		}
 	}
@@ -470,6 +485,9 @@ void controlpanel_calibrate() {
 					"  m - Magnetometer PID\n"
 					"  q - Back\n";
 				puts_P(msg);
+				break;
+			default:
+				puts_P(unknown_str);
 				break;
 		}
 	}
