@@ -13,6 +13,6 @@ void solenoid_init() {
 
 void solenoid_kill() {
 	solenoid_port.OUTSET = solenoid_mask;
-	_delay_ms(500);
+	_delay_ms(250);
 	solenoid_port.OUTCLR = solenoid_mask;
 }
