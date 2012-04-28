@@ -39,11 +39,8 @@ void estop_killall() {
 	motor_estop();
 	solenoid_kill();
 	_delay_ms(10);
-	debug_setLED(LED_ESTOP, true);
+	debug_setLED(ESTOP_LED, true);
 	cli();				// Disable all interrupts
-//	PMIC.CTRL = 0x00;	// Disable High, Medium, and Low level interrupts
-//	CPU_CCP = CCP_IOREG_gc;		// give change protection signature
-//	RST.CTRL = RST_SWRST_bm;	// software reset processor
 	while (true) {
 		if (!estop_checkPin()) {
 			estop_reboot();
@@ -56,7 +53,7 @@ void estop_reboot() {
 	motor_estop();
 	solenoid_kill();
 	_delay_ms(10);
-	debug_setLED(LED_ESTOP, true);
+	debug_setLED(ESTOP_LED, true);
 	cli();				// Disable all interrupts
 	CPU_CCP = CCP_IOREG_gc;		// give change protection signature
 	RST.CTRL = RST_SWRST_bm;	// software reset processor

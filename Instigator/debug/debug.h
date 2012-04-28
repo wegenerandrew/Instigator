@@ -4,11 +4,11 @@
 #include <stdint.h>
 
 enum LED {
-	LED_ERROR,
-	LED_ESTOP,
-	LED_BATTERY,
-	LED_OTHER3,
-	LED_OTHER4
+	OTHER2_LED,
+	OTHER3_LED,
+	OTHER4_LED,
+	ESTOP_LED,
+	ERROR_LED
 };
 
 void debug_init();

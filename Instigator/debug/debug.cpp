@@ -14,7 +14,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 
-static PORT_t debugled_port = PORTJ;
+static PORT_t &debugled_port = PORTJ;
 static const int debugled_mask = _BV(0) | _BV(1) | _BV(2) | _BV(3) | _BV(4);
 
 // debug timer
@@ -33,7 +33,6 @@ static FILE stdinout;
 
 void debug_init() {
 	debugled_port.DIRSET = debugled_mask;
-	debugled_port.OUTSET = debugled_mask;
 	
 	tim.CTRLA = TC_CLKSEL_DIV64_gc; // 32Mhz / 64 = .5 Mhz timer
 	tim.PER = 0xFFFF; // 1Mhz / 65536 = 65ms
@@ -123,7 +122,7 @@ void debug_halt(const char *reason) {
 	bool led=false;
 	while (true) {
 		printf_P("Halted: %s\n", reason);
-		debug_setLED(LED_BATTERY, led);
+		debug_setLED(ERROR_LED, led);
 		led = !led;
 		_delay_ms(1000);
 	}

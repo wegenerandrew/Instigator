@@ -37,6 +37,9 @@ bool controlpanel() {
 			case 's':
 				controlpanel_sensor();
 				break;
+			case 'l':
+				controlpanel_LED();
+				break;
 			case 'a':
 				controlpanel_autonomy();
 				break;
@@ -51,6 +54,7 @@ bool controlpanel() {
 					"Control Panels:\n"
 					"  d - Drive\n"
 					"  s - Sensors\n"
+					"  l - LED\n"
 					"  a - Autonomy\n"
 					"  c - Calibrate\n"
 					"  q - Quit";
@@ -242,6 +246,60 @@ void controlpanel_drive() {
 					"  Pp	 - Enable/Disable motor control debug\n"
 					"  q	 - Back";
 				puts_P(msg);
+				break;
+		}
+	}
+}
+
+void controlpanel_LED() {
+	bool error_led = false;
+	bool estop_led = false;
+	bool led2 = false;
+	bool led3 = false;
+	bool led4 = false;
+	while (true) {
+		char ch = controlpanel_promptChar("LED");
+		switch (ch) {
+			case 'e':
+				debug_setLED(ERROR_LED, !error_led);
+				error_led = !error_led;
+				break;
+			case 's':
+				debug_setLED(ESTOP_LED, !estop_led);
+				estop_led = !estop_led;
+				break;
+			case '2':
+				debug_setLED(OTHER2_LED, !led2);
+				led2 = !led2;
+				break;
+			case '3':
+				debug_setLED(OTHER3_LED, !led3);
+				led3 = !led3;
+				break;
+			case '4':
+				debug_setLED(OTHER4_LED, !led4);
+				led4 = !led4;
+				break;
+			case 'q':
+				debug_setLED(ERROR_LED, false);
+				debug_setLED(ESTOP_LED, false);
+				debug_setLED(OTHER2_LED, false);
+				debug_setLED(OTHER3_LED, false);
+				debug_setLED(OTHER4_LED, false);
+				return;
+			case '?':
+				static const char msg[] PROGMEM =
+					"LED commands:\n"
+					"  e  - Error LED\n"
+					"  s  - Estop LED\n"
+					"  2  - LED 2\n"
+					"  3  - LED 3\n"
+					"  4  - LED 4\n"
+					"  q  - Back";
+				puts_P(msg);
+				break;
+			default:
+				puts_P(unknown_str);
 				break;
 		}
 	}
