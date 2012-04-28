@@ -18,10 +18,10 @@ static const int estop_mask = _BV(1);
 static volatile bool estop = false;
 
 void estop_init() {
-	estop_port.DIRSET  &= estop_mask;		 //Set pin 7 as input leave pwm pins alone
+	estop_port.DIRCLR   = estop_mask;		 //Set pin 1 as input leave pwm pins alone
 	estop_port.INTCTRL  = TC_OVFINTLVL_HI_gc;		// EStop set to High Priority
-	estop_port.PIN7CTRL = PORT_ISC_RISING_gc | PORT_OPC_PULLUP_gc;		//Set pin 7 to be pulled up and interupt to occur on the falling edge
-	estop_port.INT0MASK = estop_mask;  //Set pin 7 in port F to be part of an interrupt
+	estop_port.PIN1CTRL = PORT_ISC_RISING_gc | PORT_OPC_PULLUP_gc;		//Set pin 1 to be pulled up and interupt to occur on the falling edge
+	estop_port.INT0MASK = estop_mask;  //Set pin 1 in port H to be part of an interrupt
 }
 
 void estop_initCheck() {
@@ -61,8 +61,9 @@ void estop_reboot() {
 
 bool estop_checkPin() {
 	uint8_t estop_check = estop_port.IN;
-	estop_check = estop_check >> 7;
-	if (estop_check == estop_mask) {	// TODO May break estop!!
+//	estop_check = estop_check << 6;
+//	estop_check = estop_check >> 7;
+	if ((estop_check & 0x02) == 0x02) {	// TODO May break estop!!
 		return true;
 	} else {
 		return false;
