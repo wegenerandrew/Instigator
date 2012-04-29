@@ -21,7 +21,7 @@
 static const char unknown_str[] PROGMEM = "Unknown. ? for help.";
 static const float turn_diff = 100;
 
-static float speed = 700;
+static float speed = 400;
 
 
 void controlpanel_init() {
@@ -182,7 +182,7 @@ void controlpanel_drive() {
 				//drive_fd(speed);
 				break;
 			case 'A':
-				motor_ramp(-(speed - turn_diff), (speed - turn_diff));
+				motor_ramp(-200, 200);
 				//drive_lturn(speed);
 				break;
 			case 'S':
@@ -190,7 +190,7 @@ void controlpanel_drive() {
 				//drive_bk(speed);
 				break;
 			case 'D':
-				motor_ramp((speed - turn_diff), -(speed - turn_diff));
+				motor_ramp(200, -200);
 				//drive_rturn(speed);
 				break;
 			case 'k':
