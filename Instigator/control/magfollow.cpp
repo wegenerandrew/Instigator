@@ -18,7 +18,7 @@ static volatile float vel;
 static volatile float error_filter;
 static volatile bool debug;
 static PIDState pidstate;
-static PIDGains pidgains = {200, 0, 12, 0};
+static PIDGains pidgains = {100, 0, 5, 0};
 static float heading_offset;						// heading offset value in radians
 static MagCal magcal = {-97.5, -81, 0.89606};		// x_offset, y_offset, y_scale
 
