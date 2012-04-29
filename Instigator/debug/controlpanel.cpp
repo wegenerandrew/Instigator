@@ -88,19 +88,28 @@ void controlpanel_autonomy() {
 				break;
 			}
 			case 'a':
-				follow = follow - 5;
-				magfollow_start(speed, anglewrap(degtorad(follow)));
-				printf_P(PSTR("Following at: %f\n"), follow);
+				follow = follow + 5;
+				if (magfollow_enabled()) {
+					magfollow_start(speed, anglewrap(degtorad(follow)));
+					printf_P(PSTR("Following at: %f\n"), follow);
+				} else {
+					printf_P(PSTR("Not following, but heading set to: %f\n"), follow);
+				}
 				break;
 			case 'd':
-				follow = follow + 5;
-				magfollow_start(speed, anglewrap(degtorad(follow)));
-				printf_P(PSTR("Following at: %f\n"), follow);
+				follow = follow - 5;
+				if (magfollow_enabled()) {
+					magfollow_start(speed, anglewrap(degtorad(follow)));
+					printf_P(PSTR("Following at: %f\n"), follow);
+				} else {
+					printf_P(PSTR("Not following, but heading set to: %f\n"), follow);
+				}
 				break;
 			case ' ':
 				magfollow_stop();
 				break;
 			case 'q':
+				magfollow_stop();
 				return;
 			case '?':
 				static const char msg[] PROGMEM =

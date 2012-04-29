@@ -34,6 +34,10 @@ void magfollow_stop() {
 	drive_stop();
 }
 
+bool magfollow_enabled() {
+	return enabled;
+}
+
 float magfollow_getHeading() {
 	MagReading reading = mag_getReading();
 	float x = reading.x - magcal.x_offset;

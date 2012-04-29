@@ -10,6 +10,7 @@ void magfollow_setHeading(float heading);
 void magfollow_start(float vel, float heading);
 void magfollow_stop();
 void magfollow_tick();
+bool magfollow_enabled();
 
 void magfollow_setDebug(bool debug);
 
