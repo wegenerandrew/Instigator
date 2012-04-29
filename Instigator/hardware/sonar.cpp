@@ -97,7 +97,7 @@ ISR(SIGINT0VECTD) {		// Interrupt for rising/falling edges of pulse returned by 
 			sonarData[sonar].pulseStart = sonar_timer.CNT;
 			rising = false;
 		} else {
-			sonarData[sonar].dist = (sonar_timer.CNT - sonarData[sonar].pulseStart)/29; // Converts length of pulse to distance in Centimeters
+			sonarData[sonar].dist = (sonar_timer.CNT - sonarData[sonar].pulseStart)/74; // Converts length of pulse to distance in Centimeters
 			rising = true;
 		}
 	}
@@ -110,7 +110,7 @@ ISR(SIGINT0VECTE) {		// Interrupt for rising/falling edges of pulse returned by 
 			sonarData[sonar].pulseStart = sonar_timer.CNT;
 			rising = false;
 		} else {
-			sonarData[sonar].dist = (sonar_timer.CNT - sonarData[sonar].pulseStart)/29; // Converts length of pulse to distance in Centimeters
+			sonarData[sonar].dist = (sonar_timer.CNT - sonarData[sonar].pulseStart)/74; // Converts length of pulse to distance in Centimeters
 			rising = true;
 		}
 	}
@@ -123,7 +123,7 @@ ISR(SIGINT0VECTF){		// Interrupt for rising/falling edges of pulse returned by s
 			sonarData[sonar].pulseStart = sonar_timer.CNT;
 			rising = false;
 		} else {
-			sonarData[sonar].dist = (sonar_timer.CNT - sonarData[sonar].pulseStart)/29; // Converts length of pulse to distance in Centimeters
+			sonarData[sonar].dist = (sonar_timer.CNT - sonarData[sonar].pulseStart)/74; // Converts length of pulse to distance in inches (x/29 = Centimeters)
 			rising = true;
 		}
 	}
