@@ -63,7 +63,7 @@ while True:
                 s.write('U'*10)
                 time.sleep(.025)
                 data += s.read(s.inWaiting())
-                if data.endswith('c45b2 v2.9C\n\r>\x11'):
+                if data.endswith('c45b2 v2.9H\n\r>\x11'):
                     break
             else:
                 continue

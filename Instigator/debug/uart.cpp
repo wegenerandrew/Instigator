@@ -23,7 +23,7 @@ static PORT_t &uartport_xbee = PORTE;
 #define RXVEC_XBEE USARTE1_RXC_vect
 #define TXVEC_XBEE USARTE1_DRE_vect
 static USART_t &uart_xbee = USARTE1;
-static const int bsel_xbee = 3333;
+static const int bsel_xbee = 832;	// old bsel was 3333
 static const int bscale_xbee = 0xC;
 static const int txpin_xbee = 7;
 static const int rxpin_xbee = 6;
