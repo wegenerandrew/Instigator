@@ -105,6 +105,11 @@ void controlpanel_autonomy() {
 					printf_P(PSTR("Not following, but heading set to: %f\n"), follow);
 				}
 				break;
+			case 't':
+				controlpanel_prompt("Heading (deg)", "%f", &follow);
+				printf_P(PSTR("Currently at: %f, Turning to: %f\n"), magfollow_getHeading(), follow);
+				magfollow_turn(speed, anglewrap(degtorad(follow)));
+				break;
 			case ' ':
 				magfollow_stop();
 				break;
@@ -119,6 +124,7 @@ void controlpanel_autonomy() {
 					"  w - Magfollow\n"
 					"  a - Shift following left\n"
 					"  d - Shift following right\n"
+					"  t - MagTurn\n"
 					" ' '- Stop\n"
 					"  q - Quit";
 				puts_P(msg);

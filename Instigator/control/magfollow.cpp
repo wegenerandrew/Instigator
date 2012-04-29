@@ -11,6 +11,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <util/delay.h>
 
 static volatile bool enabled = false;
 static volatile float heading;						// heading in radians
@@ -18,11 +19,12 @@ static volatile float vel;
 static volatile float error_filter;
 static volatile bool debug;
 static PIDState pidstate;
+static PIDGains pidturngains = {100, 0, 5, 0};
 static PIDGains pidgains = {100, 0, 5, 0};
 static float heading_offset;						// heading offset value in radians
 static MagCal magcal = {-97.5, -81, 0.89606};		// x_offset, y_offset, y_scale
 
-void magfollow_start(float new_vel, float new_heading) {		// heading in 
+void magfollow_start(float new_vel, float new_heading) {		// heading in radians
 	pid_initState(pidstate);
 	heading = new_heading;
 	vel = new_vel;
@@ -36,6 +38,27 @@ void magfollow_stop() {
 
 bool magfollow_enabled() {
 	return enabled;
+}
+
+void magfollow_turn(float new_vel, float new_heading) {		// heading in radians
+	pid_initState(pidstate);
+	heading = new_heading;
+	vel = new_vel;
+	float error = magfollow_getHeading() - heading;
+	error = anglewrap(error);
+	PIDDebug piddebug;
+	while (sign(error)*error > 0.15) {	// stop when within this many radians of desired heading
+		_delay_ms(10);
+		error = magfollow_getHeading() - heading;
+		error = anglewrap(error);
+		float out = pid_update(pidstate, pidturngains, error, 0.01, &piddebug);
+		if (debug) {
+			pid_printDebug(out, error_filter, piddebug);
+		}
+//		printf("error: %f, pid: %f\n", sign(error)*error, out);	//debugging
+		drive(vel*(out/300), -vel*(out/300));		// if it doesnt reach ends of turns, decrease divisor
+//		printf("lvel: %f, rvel: %f, curr: %f, des: %f\n", vel*(out/300), -vel*(out/300), magfollow_getHeading(), heading);
+	}
 }
 
 float magfollow_getHeading() {
@@ -62,7 +85,6 @@ void magfollow_tick() {
 
 	PIDDebug piddebug;
 	float out = pid_update(pidstate, pidgains, error_filter, TICK_DT, &piddebug);
-	printf("%f\n", out);
 
 	if (debug)
 		pid_printDebug(out, error_filter, piddebug);
