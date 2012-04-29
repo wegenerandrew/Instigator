@@ -12,6 +12,8 @@ enum LED {
 };
 
 void debug_init();
+void debug_initCheck();
+
 void debug_setLED(LED led, bool on);
 
 void debug_resetTimer();

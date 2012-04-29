@@ -52,5 +52,6 @@ void init_modules() {
 	sonar_init();
 	motorcontrol_init();
 	controlpanel_init();
+	debug_initCheck();
 	estop_initCheck();
 }
