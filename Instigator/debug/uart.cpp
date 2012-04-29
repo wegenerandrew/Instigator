@@ -1,7 +1,7 @@
 #include "uart.h"
 #include "debug.h"
 #include "util.h"
-#include "estop.h"
+#include "hardware/estop.h"
 
 #include <util/delay.h>
 #include <avr/io.h>

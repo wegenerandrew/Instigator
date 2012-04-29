@@ -43,7 +43,7 @@ void estop_killall() {
 	cli();				// Disable all interrupts
 	while (true) {
 		if (!estop_checkPin()) {
-			estop_reboot();
+			estop_restart();
 		}
 	}
 }
@@ -54,6 +54,10 @@ void estop_reboot() {
 	solenoid_kill();
 	_delay_ms(10);
 	debug_setLED(ESTOP_LED, true);
+	estop_restart();
+}
+
+void estop_restart() {
 	cli();				// Disable all interrupts
 	CPU_CCP = CCP_IOREG_gc;		// give change protection signature
 	RST.CTRL = RST_SWRST_bm;	// software reset processor
@@ -61,9 +65,7 @@ void estop_reboot() {
 
 bool estop_checkPin() {
 	uint8_t estop_check = estop_port.IN;
-//	estop_check = estop_check << 6;
-//	estop_check = estop_check >> 7;
-	if ((estop_check & 0x02) == 0x02) {	// TODO May break estop!!
+	if ((estop_check & 0x02) == 0x02) {
 		return true;
 	} else {
 		return false;
