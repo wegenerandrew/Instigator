@@ -12,6 +12,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <util/delay.h>
+#include <avr/interrupt.h>
 
 static volatile bool enabled = false;
 static volatile float heading;						// heading in radians
@@ -19,7 +20,7 @@ static volatile float vel;
 static volatile float error_filter;
 static volatile bool debug;
 static PIDState pidstate;
-static PIDGains pidturngains = {100, 0, 5, 0};
+static PIDGains pidturngains = {100, 0, 5, 0};		// TODO: Integral??
 static PIDGains pidgains = {100, 0, 5, 0};
 static float heading_offset;						// heading offset value in radians
 static MagCal magcal = {-97.5, -81, 0.89606};		// x_offset, y_offset, y_scale
@@ -56,16 +57,20 @@ void magfollow_turn(float new_vel, float new_heading) {		// heading in radians
 			pid_printDebug(out, error_filter, piddebug);
 		}
 //		printf("error: %f, pid: %f\n", sign(error)*error, out);	//debugging
-		drive(vel*(out/300), -vel*(out/300));		// if it doesnt reach ends of turns, decrease divisor
+		drive(vel*(out/200), -vel*(out/200));		// if it doesnt reach ends of turns, decrease divisor
 //		printf("lvel: %f, rvel: %f, curr: %f, des: %f\n", vel*(out/300), -vel*(out/300), magfollow_getHeading(), heading);
 	}
 }
 
 float magfollow_getHeading() {
+//	cli();
 	MagReading reading = mag_getReading();
 	float x = reading.x - magcal.x_offset;
 	float y = (reading.y - magcal.y_offset)*magcal.y_scale;
-	return anglewrap(atan2(y, x) + heading_offset);
+//	float value = anglewrap(atan(y/x) + heading_offset);
+	float value = anglewrap(atan2(y, x) + heading_offset);
+//	sei();
+	return value;
 }
 
 void magfollow_setHeading(float desired_heading) {
