@@ -12,6 +12,7 @@ void controlpanel_drive();
 void controlpanel_autonomy();
 void controlpanel_LED();
 void controlpanel_sensor();
+void controlpanel_gps();
 void controlpanel_encoder();
 void controlpanel_magnetometer();
 void controlpanel_calibrate();

@@ -2,6 +2,7 @@
 #include "control/magfollow.h"
 #include "control/weedwhacker.h"
 #include "control/tick.h"
+#include "hardware/gps.h"
 #include "debug/debug.h"
 #include "debug/controlpanel.h"
 #include "hardware/motor.h"
@@ -336,6 +337,8 @@ void controlpanel_sensor() {
 			case 's':
 				controlpanel_sonar();
 				break;
+			case 'g':
+				controlpanel_gps();
 			case 'q':
 				return;
 			case '?':
@@ -344,6 +347,39 @@ void controlpanel_sensor() {
 					"  e - Encoders\n"
 					"  m - Magnetometer\n"
 					"  s - Sonar\n"
+					"  g - GPS\n"
+					"  q - Back\n";
+				puts_P(msg);
+				break;
+			default:
+				puts_P(unknown_str);
+				break;
+		}
+	}
+}
+
+void controlpanel_gps() {
+	char rawData;
+	while (true) {
+		char ch = controlpanel_promptChar("GPS");
+		switch (ch) {
+			case 'r':
+				gps_printRaw();
+				break;
+			case 's':
+				gps_printStatus();
+				break;
+			case 'p':
+				gps_printPos();
+				break;
+			case 'q':
+				return;
+			case '?':
+				static const char msg[] PROGMEM =
+					"Sensor menu:\n"
+					"  r - Raw Data\n"
+					"  s - GPS Status\n"
+					"  p - Position\n"
 					"  q - Back\n";
 				puts_P(msg);
 				break;

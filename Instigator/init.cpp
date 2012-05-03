@@ -11,6 +11,8 @@
 #include "hardware/mag.h"
 #include "hardware/sonar.h"
 #include "hardware/solenoid.h"
+#include "hardware/gps.h"
+#include "hardware/weedwhacker.h"
 
 #include <avr/io.h>
 #include <avr/pgmspace.h>
@@ -22,6 +24,7 @@ void init() {
 	init_clocks();
 	init_modules();
 	init_interrupts();
+	gps_init();
 }
 
 void init_interrupts() {

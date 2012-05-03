@@ -5,6 +5,7 @@
 #include "debug/debug.h"
 #include "hardware/estop.h"
 #include "hardware/motor.h"
+#include "hardware/gps.h"
 
 #include <avr/interrupt.h>
 #include <avr/io.h>
@@ -64,6 +65,7 @@ ISR(TIMOVFVEC) {
 	magfollow_tick();
 	motor_tick();
 	odometry_tick();
+	gps_tick();
 
 	ticklength = tim.CNT - start;
 }
