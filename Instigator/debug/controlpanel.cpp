@@ -334,6 +334,9 @@ void controlpanel_sensor() {
 			case 'e':
 				controlpanel_encoder();
 				break;
+			case 'b':
+				printf_P(PSTR("%f\n"), adc_sampleBattery());
+				break;
 			case 'm':
 				controlpanel_magnetometer();
 				break;

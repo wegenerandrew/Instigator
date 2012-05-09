@@ -1,5 +1,5 @@
 #include "uart.h"
-#include "debug.h"
+#include "debug/debug.h"
 #include "util.h"
 #include "hardware/estop.h"
 
