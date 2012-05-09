@@ -84,7 +84,8 @@ void controlpanel_autonomy() {
 				break;
 			}
 			case 'w': {
-				controlpanel_prompt("Heading (deg)", "%f", &follow);
+				printf_P(PSTR("Currently Facing (deg): %f\n"), radtodeg(magfollow_getHeading()));
+				controlpanel_prompt("Follow at Heading (deg)", "%f", &follow);
 				magfollow_start(speed, anglewrap(degtorad(follow)));
 				printf_P(PSTR("Following at: %f\n"), follow);
 				break;
@@ -108,7 +109,8 @@ void controlpanel_autonomy() {
 				}
 				break;
 			case 't':
-				controlpanel_prompt("Heading (deg)", "%f", &follow);
+				printf_P(PSTR("Currently Facing (deg): %f\n"), radtodeg(magfollow_getHeading()));
+				controlpanel_prompt("Turn to Heading (deg)", "%f", &follow);
 				printf_P(PSTR("Currently at: %f, Turning to: %f\n"), magfollow_getHeading(), follow);
 				magfollow_turn(speed, anglewrap(degtorad(follow)));
 				break;
