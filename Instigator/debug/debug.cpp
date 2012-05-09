@@ -43,30 +43,22 @@ void debug_init() {
 }
 
 void debug_initCheck() {
-	if ((RST.STATUS & RST_BORF_bm) == RST_BORF_bm) {
+/*	if ((RST.STATUS & RST_BORF_bm) == RST_BORF_bm) {
 		printf_P(PSTR("Reset caused by Brownout!!\n"));
-		RST.STATUS = RST_BORF_bm;	// Clear flag
+//		RST.STATUS = RST_BORF_bm;	// Clear flag
 	}
 	if ((RST.STATUS & RST_SRF_bm) == RST_SRF_bm) {
 		printf_P(PSTR("Reset caused by Software Reset.\n"));
-		RST.STATUS = RST_SRF_bm;	// Clear flag
-	}
-	if ((RST.STATUS & RST_PDIRF_bm) == RST_PDIRF_bm) {
-		printf_P(PSTR("Reset caused by Program Debug Interface.\n"));
-		RST.STATUS = RST_PDIRF_bm;	// Clear flag
-	}
-	if ((RST.STATUS & RST_WDRF_bm) == RST_WDRF_bm) {
-		printf_P(PSTR("Reset caused by Watchdog Reset!\n"));
-		RST.STATUS = RST_WDRF_bm;	// Clear flag
-	}
-	if ((RST.STATUS & RST_EXTRF_bm) == RST_EXTRF_bm) {
+//		RST.STATUS = RST_SRF_bm;	// Clear flag
+	}*/
+/*	if ((RST.STATUS & RST_EXTRF_bm) == RST_EXTRF_bm) {
 		printf_P(PSTR("Board was Externally Reset.\n"));
-		RST.STATUS = RST_EXTRF_bm;	// Clear flag
+//		RST.STATUS = RST_EXTRF_bm;	// Clear flag
 	}
 	if ((RST.STATUS & RST_PORF_bm) == RST_PORF_bm) {
 		printf_P(PSTR("Board was Power Cycled.\n"));
-		RST.STATUS = RST_PORF_bm;	// Clear flag
-	}
+//		RST.STATUS = RST_PORF_bm;	// Clear flag
+	}*/
 }
 
 void debug_setLED(LED led, bool on) {
