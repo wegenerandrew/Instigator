@@ -1,0 +1,4 @@
+#!/bin/sh
+
+minicom -o -b 38400 -D /dev/ttyUSB0
+
