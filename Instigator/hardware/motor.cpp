@@ -10,23 +10,20 @@
 #include <avr/pgmspace.h>
 
 static PORT_t &motor_port = PORTF;
-static const int PWMpins_mask = _BV(0) | _BV(1) | _BV(2);
+static const int PWMpins_mask = _BV(0) | _BV(1);
 
 static PORT_t &motordir_port = PORTH;
-static const int motordir_mask = _BV(2) | _BV(3) | _BV(4) | _BV(5) | _BV(6) | _BV(7);
+static const int motordir_mask = _BV(2) | _BV(3) | _BV(4) | _BV(5);
 
-static const uint8_t port[3] = {0, 1, 2}; // RLW
+static const uint8_t port[2] = {0, 1}; // RL
 
 static uint32_t tick_timer = 0;
 static int16_t desPWML = 0;
 static int16_t currPWML = 0;
 static int16_t desPWMR = 0;
 static int16_t currPWMR = 0;
-static int16_t desPWMW = 0;
-static int16_t currPWMW = 0;
 static bool lramp = false;
 static bool rramp = false;
-static bool wramp = false;
 
 void motor_init() {
 	motor_port.DIRSET = PWMpins_mask;
@@ -43,8 +40,6 @@ void motor_setPWM(uint8_t mot, int16_t PWM) {
 		currPWML = PWM;
 	} else if (mot == MOTOR_RIGHT) {
 		currPWMR = PWM;
-	} else if (mot == MOTOR_WEEDWHACKER) {
-		currPWMW = PWM;
 	}
 
 	if (PWM == 0) {
@@ -67,10 +62,8 @@ void motor_setPWM(uint8_t mot, int16_t PWM) {
 void motor_allOff() {
 	lramp = false;
 	rramp = false;
-	wramp = false;
 	currPWML = 0;
 	currPWMR = 0;
-	currPWMW = 0;
 	for (int i=0; i<motor_count; i++) {
 		(&TCF0.CCABUF)[i] = 0;
 	}
@@ -83,9 +76,6 @@ void motor_killMotor(uint8_t mot) {
 	} else if (mot == MOTOR_RIGHT) {
 		rramp = false;
 		currPWMR = 0;
-	} else if (mot == MOTOR_WEEDWHACKER) {
-		wramp = false;
-		currPWMW = 0;
 	}
 	(&TCF0.CCABUF)[mot] = 0;
 }
@@ -109,11 +99,6 @@ void motor_ramp(int16_t newPWML, int16_t newPWMR) {
 	desPWMR = newPWMR;
 	lramp = true;
 	rramp = true;
-}
-
-void motor_startWhacker(int16_t newPWMW) {
-	desPWMW = newPWMW;
-	wramp = true;
 }
 
 void motor_goPWM(int16_t newPWML, int16_t newPWMR) {	// Set an RPM to lock hard on
@@ -146,15 +131,6 @@ void motor_tick() {
 			motor_setPWM(MOTOR_RIGHT, currPWMR - 50);
 		} else {
 			rramp = false;
-		}
-	}
-	if (wramp) {
-		if (currPWMW < desPWMW) {
-			motor_setPWM(MOTOR_WEEDWHACKER, currPWMW + 50);
-		} else if (currPWMR > desPWMR) {
-			motor_setPWM(MOTOR_WEEDWHACKER, currPWMW - 50);
-		} else {
-			wramp = false;
 		}
 	}
 	tick_timer = tick_timer + 1;

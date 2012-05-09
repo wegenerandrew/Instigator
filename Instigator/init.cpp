@@ -48,6 +48,7 @@ void init_modules() {
 	adc_init();
 	debug_init();
 	motor_init();
+	weedwhacker_init();
 	solenoid_init();
 	enc_init();
 	tick_init();

@@ -1,6 +1,5 @@
 #include "control/drive.h"
 #include "control/magfollow.h"
-#include "control/weedwhacker.h"
 #include "control/tick.h"
 #include "hardware/gps.h"
 #include "debug/debug.h"
@@ -9,6 +8,8 @@
 #include "hardware/mag.h"
 #include "hardware/encoder.h"
 #include "hardware/sonar.h"
+#include "hardware/adc.h"
+#include "hardware/weedwhacker.h"
 #include "util.h"
 
 #include <avr/io.h>
@@ -195,10 +196,10 @@ void controlpanel_drive() {
 				//drive_rturn(speed);
 				break;
 			case 'k':
-				weedwhacker_kill();
+				weedwhacker_power(false);
 				break;
 			case 'K':
-				weedwhacker_start();
+				weedwhacker_power(true);
 				break;
 			case '=':
 				speed += 100;

@@ -5,8 +5,7 @@
 
 enum Motor {
 	MOTOR_RIGHT,
-	MOTOR_LEFT,
-	MOTOR_WEEDWHACKER
+	MOTOR_LEFT
 };
 
 static const int motor_count = 4;
@@ -14,7 +13,6 @@ static const int16_t motor_maxPWM = 1024;
 
 void motor_init();
 void motor_ramp(int16_t newPWML, int16_t newPWMR);
-void motor_startWhacker(int16_t newPWMW);
 void motor_goPWM(int16_t newPWML, int16_t newPWMR);
 void motor_setPWM(uint8_t mot, int16_t PWM);
 int16_t motor_getPWM(uint8_t mot);
