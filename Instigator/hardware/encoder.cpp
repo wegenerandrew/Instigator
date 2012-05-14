@@ -1,45 +1,62 @@
 #include "hardware/encoder.h"
+#include "debug/debug.h"
+#include "util.h"
+#include "hardware/estop.h"
+#include "control/odometry.h"
 
+#include <util/delay.h>
 #include <avr/io.h>
+#include <avr/interrupt.h>
+#include <string.h>
+#include <stdint.h>
 
-static PORT_t &enc_port = PORTD;		// Was portf
-static const int encpins_mask = 0xF0;
+// Encoder Pin Masks
+static const int cspin_mask = _BV(0);
+static const int clkpin_mask = _BV(1);
+static const int datapin_mask = _BV(2);
+static PORT_t encoder_port;
 
-static const int chan0mux = EVSYS_CHMUX_PORTD_PIN4_gc;
-static const int chan2mux = EVSYS_CHMUX_PORTD_PIN6_gc; // event channels are used in pairs for qdec
+// lEncoder
+static PORT_t &lEncoder_port = PORTD;
 
-static TC0_t &enctim0 = TCD0;
-static TC1_t &enctim1 = TCD1;
+// rEncoder
+static PORT_t &rEncoder_port = PORTE;
 
-void enc_init() {
-	PORTCFG.MPCMASK = encpins_mask; // configure all encoder pins
-	enc_port.PIN0CTRL = PORT_ISC_LEVEL_gc | PORT_OPC_PULLUP_gc; // set them to level sensing, required for qdec hardware
+static int16_t encoderVal[2] = {0x00, 0x00};
+static int16_t previousVal[2] = {0x00, 0x00};
+static int16_t encoderTemp[2] = {0x00, 0x00};
+static int16_t encoderOffset[2] = {0x00, 0x00};
 
-	EVSYS.CH0MUX = chan0mux; // configure the event channel muxes to the correct pins
-	EVSYS.CH2MUX = chan2mux;
-	EVSYS.CH0CTRL = EVSYS.CH2CTRL = EVSYS_QDEN_bm | EVSYS_DIGFILT_8SAMPLES_gc; // turn on quadrature decoding, and digital filtering
-
-	enctim0.CTRLD = TC_EVACT_QDEC_gc | TC_EVSEL_CH0_gc; // set up timers for quadrature decoding from the correct event channels
-	enctim1.CTRLD = TC_EVACT_QDEC_gc | TC_EVSEL_CH2_gc;
-	enctim0.PER = enctim1.PER = 0xFFFF; // max out the period so we use all 16 bits before overflowing
-	enctim0.CTRLA = enctim1.CTRLA = TC_CLKSEL_DIV1_gc; // div1 clock selection required for qdec to work
+void encoder_init() {
+	lEncoder_port.OUTSET = cspin_mask;	// set chip selects to high so both encoders are disabled
+	rEncoder_port.OUTSET = cspin_mask;
+	lEncoder_port.OUTSET = clkpin_mask;	// Set clock pins to high for both encoders
+	rEncoder_port.OUTSET = clkpin_mask;
+	lEncoder_port.DIRCLR = datapin_mask;	// Set data pins to input
+	rEncoder_port.DIRCLR = datapin_mask;
+	lEncoder_port.DIRSET = cspin_mask;		// Set both chip select pins as output
+	rEncoder_port.DIRSET = cspin_mask;
+	lEncoder_port.DIRSET = clkpin_mask;	// Set both clock pins as output
+	rEncoder_port.DIRSET = clkpin_mask;
+	lEncoder_port.DIRSET = 0xFF;
+	lEncoder_port.OUTSET = 0xFF;
 }
 
-uint16_t enc_get(uint8_t num) {
-	if (num == 0)
-		return -enctim0.CNT;
-	else
-		return -enctim1.CNT;
+int encoder_get(ENCODERNum num) {		// Gives value encoder is at minus offset (so you can reset encoders to 0)
+	return encoderVal[num] - encoderOffset[num];
 }
 
-void enc_reset(uint8_t num) {
-	if (num == 0)
-		enctim0.CNT = 0;
-	else
-		enctim1.CNT = 0;
+void encoder_reset(ENCODERNum num) {	// Sets offset to current encoder position, encoder_get() will then return 0 at this position
+	encoderOffset[num] = encoderVal[num];
 }
 
-int16_t enc_diff(uint16_t a, uint16_t b) {
+void encoder_resetAll() {				// does encoder_reset() but for both encoders
+	for (int i = 0; i < encoder_count; i++) {
+		encoderOffset[i] = encoderVal[i];
+	}
+}
+
+int16_t encoder_diff(uint16_t a, uint16_t b) {		// Returns difference between two positions of encoders, deals with wraparound
 	int16_t diff = (int16_t)a - (int16_t)b;
 	if (diff > INT16_MAX/2) {	// if encoder wrapped around
 		diff -= INT16_MAX;
@@ -47,4 +64,36 @@ int16_t enc_diff(uint16_t a, uint16_t b) {
 		diff += INT16_MAX;
 	}
 	return diff;
+}
+
+static void receive(ENCODERNum num) {
+	previousVal[num] = encoderVal[num];
+	encoderTemp[num] = 0x00;		// Reset temp for new reading
+	if (num == LEFT_ENCODER) {		// Set up which encoder port we're working with
+		PORT_t &encoder_port = lEncoder_port;
+	} else {
+		PORT_t &encoder_port = rEncoder_port;
+	}
+	encoder_port.OUTCLR = cspin_mask;	// Set chipselect low to enable encoder
+	_delay_us(1);		// min 500 ns
+	encoder_port.OUTCLR = clkpin_mask;	// Set clock low
+	for (int i = 0; i < 11; i++) {		// up, down, read, repeat
+		_delay_us(1);
+		encoder_port.OUTSET = clkpin_mask;	// up
+		_delay_us(1);
+		encoder_port.OUTCLR = clkpin_mask;	// down
+		encoderTemp[num] = encoderTemp[num] | ((encoder_port.IN >> datapin_mask) & 0x01);	// read
+		encoderTemp[num] = encoderTemp[num] << 1;		// get ready for next bit
+	}	// Repeat
+	_delay_us(1);
+	encoder_port.OUTSET = clkpin_mask;
+	_delay_us(1);
+	encoderVal[num] = encoderTemp[num] | ((encoder_port.IN >> datapin_mask) & 0x01);	// final read
+	encoder_port.OUTSET = cspin_mask;	// Deselect encoder by setting chip select high
+}
+
+void encoder_tick() {
+//	receive(LEFT_ENCODER);
+//	receive(RIGHT_ENCODER);
+//	odometry_update(encoder_diff(encoderVal[LEFT_ENCODER], previousVal[LEFT_ENCODER]), encoder_diff(encoderVal[RIGHT_ENCODER], previousVal[RIGHT_ENCODER]));
 }

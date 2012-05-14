@@ -15,21 +15,21 @@ void drive(float lvel, float rvel) {		// Velocities in centimeters/second.
 }
 
 void drive_dist(float lvel, float rvel, float dist) {
-	Motor mot;
+	ENCODERNum enc;
 	if (fabs(lvel) > fabs(rvel)) {
-		mot = MOTOR_LEFT;
+		enc = LEFT_ENCODER;
 	} else {
-		mot = MOTOR_RIGHT;
+		enc = RIGHT_ENCODER;
 	}
 	
-	int16_t enc_ticks = (int16_t)((dist / wheel_circumference) * enc_per_rotation);
-	uint16_t enc_start = enc_get(mot);
+	int16_t encoder_ticks = (int16_t)((dist / wheel_circumference) * ticks_per_rotation);
+	uint16_t encoder_start = encoder_get(enc);
 
 	drive(lvel, rvel);
 	if (dist > 0) {
-		while (enc_diff(enc_get(mot), enc_start) < enc_ticks) { }
+		while (encoder_diff(encoder_get(enc), encoder_start) < encoder_ticks) { }
 	} else {
-		while (enc_diff(enc_get(mot), enc_start) > enc_ticks) { }
+		while (encoder_diff(encoder_get(enc), encoder_start) > encoder_ticks) { }
 	}
 	drive_stop();
 }

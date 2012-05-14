@@ -5,8 +5,8 @@ static const int sonar_count = 3;
 
 enum Sonar {
 	RIGHT_SONAR,
-	LEFT_SONAR,
-	MIDDLE_SONAR
+	MIDDLE_SONAR,
+	LEFT_SONAR
 };
 
 void sonar_init();

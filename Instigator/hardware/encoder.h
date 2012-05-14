@@ -3,12 +3,21 @@
 
 #include <stdint.h>
 
-static const float enc_per_rotation = 1920;
+static const float ticks_per_rotation = 1920;
+const int encoder_count = 2;
 
-void enc_init();
-uint16_t enc_get(uint8_t num);
-void enc_reset(uint8_t num);
+enum ENCODERNum {
+	LEFT_ENCODER,
+	RIGHT_ENCODER
+};
 
-int16_t enc_diff(uint16_t a, uint16_t b);
+void encoder_init();
+void encoder_reset(ENCODERNum num);
+void encoder_resetAll();
+
+int16_t encoder_diff(uint16_t a, uint16_t b);
+
+int encoder_get(ENCODERNum num);
+void encoder_tick();
 
 #endif

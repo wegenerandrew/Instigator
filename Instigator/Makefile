@@ -380,7 +380,7 @@ gccversion :
 
 # Program the device.
 program: $(TARGET).hex $(TARGET).eep
-	python ../chip45boot2.py $(TARGET).hex --baudrate=38400
+	python ../chip45boot2.py $(TARGET).hex --baud=57600
 #was baud=57600
 program_stk500: $(TARGET).hex $(TARGET).eep
 	$(STK500_PATH)\$(STK500) $(STK500_FLAGS) $(STK500_WRITE_FLASH)

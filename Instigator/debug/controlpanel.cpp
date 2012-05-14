@@ -402,14 +402,13 @@ void controlpanel_encoder() {
 		char ch = controlpanel_promptChar("Encoders");
 		switch (ch) {
 			case 'p':
-				ticks = enc_get(0);
-				printf_P(PSTR("Ticks: %d "), ticks);
-				ticks = enc_get(1);
-				printf_P(PSTR("Ticks: %d\n"), ticks);
+				ticks = encoder_get(LEFT_ENCODER);
+				printf_P(PSTR("L Ticks: %d "), ticks);
+				ticks = encoder_get(RIGHT_ENCODER);
+				printf_P(PSTR("R Ticks: %d\n"), ticks);
 				break;
 			case 'r':
-				enc_reset(0);
-				enc_reset(1);
+				encoder_resetAll();
 				break;
 			case 'q':
 				return;

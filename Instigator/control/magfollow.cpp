@@ -63,13 +63,10 @@ void magfollow_turn(float new_vel, float new_heading) {		// heading in radians
 }
 
 float magfollow_getHeading() {
-//	cli();
 	MagReading reading = mag_getReading();
 	float x = reading.x - magcal.x_offset;
 	float y = (reading.y - magcal.y_offset)*magcal.y_scale;
-//	float value = anglewrap(atan(y/x) + heading_offset);
 	float value = anglewrap(atan2(y, x) + heading_offset);
-//	sei();
 	return value;
 }
 

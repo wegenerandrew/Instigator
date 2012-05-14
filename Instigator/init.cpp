@@ -50,7 +50,7 @@ void init_modules() {
 	motor_init();
 	weedwhacker_init();
 	solenoid_init();
-	enc_init();
+	encoder_init();
 	tick_init();
 	mag_init();
 	sonar_init();
