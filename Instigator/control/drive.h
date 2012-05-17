@@ -18,6 +18,9 @@
 Drive libraries handle basic movements such as drive forward, drive backwards a distance, turn a set amount of degrees, etc.
 */
 
+const float wheel_circumference = 1;		// In centimeters. TODO: measure!
+const float wheelbase_radius = 1;		// In centimeters. TODO: measure!
+
 /**
 \brief Powers motors at given velocities.
 */

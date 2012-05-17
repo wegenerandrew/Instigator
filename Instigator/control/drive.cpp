@@ -4,9 +4,6 @@
 #include "hardware/encoder.h"
 #include "util.h"
 
-static const float wheel_circumference	= 1;		// In centimeters. TODO: measure!
-static const float wheelbase_radius	= 1;		// In centimeters. TODO: measure!
-
 void drive(float lvel, float rvel) {		// Velocities in centimeters/second.
 //	motorcontrol_setRPS(MOTOR_LEFT, lvel/wheel_circumference);
 //	motorcontrol_setRPS(MOTOR_RIGHT, rvel/wheel_circumference);
@@ -15,21 +12,21 @@ void drive(float lvel, float rvel) {		// Velocities in centimeters/second.
 }
 
 void drive_dist(float lvel, float rvel, float dist) {
-	ENCODERNum enc;
+	Motor mot;
 	if (fabs(lvel) > fabs(rvel)) {
-		enc = LEFT_ENCODER;
+		mot = MOTOR_LEFT;
 	} else {
-		enc = RIGHT_ENCODER;
+		mot = MOTOR_RIGHT;
 	}
 	
 	int16_t encoder_ticks = (int16_t)((dist / wheel_circumference) * ticks_per_rotation);
-	uint16_t encoder_start = encoder_get(enc);
+	uint16_t encoder_start = encoder_get((EncoderNum)mot);
 
 	drive(lvel, rvel);
 	if (dist > 0) {
-		while (encoder_diff(encoder_get(enc), encoder_start) < encoder_ticks) { }
+		while (encoder_diff(encoder_get((EncoderNum)mot), encoder_start) < encoder_ticks) { }
 	} else {
-		while (encoder_diff(encoder_get(enc), encoder_start) > encoder_ticks) { }
+		while (encoder_diff(encoder_get((EncoderNum)mot), encoder_start) > encoder_ticks) { }
 	}
 	drive_stop();
 }

@@ -65,7 +65,7 @@ void motor_allOff() {
 	currPWML = 0;
 	currPWMR = 0;
 	for (int i=0; i<motor_count; i++) {
-		(&TCF0.CCABUF)[i] = 0;
+		(&TCF0.CCABUF)[i] = 0;		// TODO: name
 	}
 }
 

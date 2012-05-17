@@ -3,21 +3,17 @@
 
 #include <stdint.h>
 
-static const float ticks_per_rotation = 1920;
-const int encoder_count = 2;
-
-enum ENCODERNum {
+enum EncoderNum {
 	LEFT_ENCODER,
 	RIGHT_ENCODER
 };
 
+static const float ticks_per_rotation = 1920;
+
 void encoder_init();
-void encoder_reset(ENCODERNum num);
-void encoder_resetAll();
+uint16_t encoder_get(EncoderNum num);
+void encoder_reset(EncoderNum num);
 
 int16_t encoder_diff(uint16_t a, uint16_t b);
 
-int encoder_get(ENCODERNum num);
-void encoder_tick();
-
-#endif
+#endif /* ENCODER_H_ */

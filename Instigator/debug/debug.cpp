@@ -71,8 +71,10 @@ void debug_setLED(LED led, bool on) {
 
 void debug_tick() {
 	if (adc_sampleBattery() < 10.5) {
-		if (++batterycnt >= 100)
+		batterycnt++;
+		if (batterycnt >= 100) {
 			debug_halt("LOW BATTERY");
+		}
 	} else {
 		batterycnt = 0;
 	}
@@ -140,7 +142,7 @@ void debug_halt(const char *reason) {
 
 	bool led=false;
 	while (true) {
-		printf_P("Halted: %s\n", reason);
+		printf_P(PSTR("Halted: %s\n"), reason);
 		debug_setLED(ERROR_LED, led);
 		led = !led;
 		_delay_ms(1000);

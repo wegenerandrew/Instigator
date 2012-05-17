@@ -1,6 +1,7 @@
 #include "control/drive.h"
 #include "control/magfollow.h"
 #include "control/tick.h"
+#include "control/odometry.h"
 #include "hardware/gps.h"
 #include "debug/debug.h"
 #include "debug/controlpanel.h"
@@ -68,10 +69,11 @@ bool controlpanel() {
 
 void controlpanel_autonomy() {
 	float follow = 0;
+	char input = ' ';
 	while (true) {
 		char ch = controlpanel_promptChar("Autonomy");
 		switch (ch) {
-			case 'c': {			// Sets current heading of robot to prompted heading from user
+			case 's': {			// Sets current heading of robot to prompted heading from user
 				float newheading;
 				controlpanel_prompt("Heading (deg)", "%f", &newheading);
 				magfollow_setHeading(degtorad(newheading));
@@ -114,6 +116,17 @@ void controlpanel_autonomy() {
 				printf_P(PSTR("Currently at: %f, Turning to: %f\n"), magfollow_getHeading(), follow);
 				magfollow_turn(speed, anglewrap(degtorad(follow)));
 				break;
+			case 'c':
+				printf_P(PSTR("Beginning auto-cal!\nTurn robot to face 0 Degrees in field.\n"));
+				input = controlpanel_promptChar("Press 'Enter' to begin or any other key to cancel.");
+				if (input == 13) {
+					magfollow_setHeading(0);		// heading set in radians
+					odometry_setPos(0, 0);
+				}
+				break;
+			case 'f':
+				debug_halt("testing");
+				break;
 			case ' ':
 				magfollow_stop();
 				break;
@@ -123,7 +136,7 @@ void controlpanel_autonomy() {
 			case '?':
 				static const char msg[] PROGMEM =
 					"Control Panels:\n"
-					"  c - Set Heading\n"
+					"  s - Set Heading\n"
 					"  h - Current Heading\n"
 					"  w - Magfollow\n"
 					"  a - Shift following left\n"
@@ -276,9 +289,9 @@ void controlpanel_drive() {
 void controlpanel_LED() {
 	bool error_led = false;
 	bool estop_led = false;
+	bool tick_led = false;
 	bool led2 = false;
 	bool led3 = false;
-	bool led4 = false;
 	while (true) {
 		char ch = controlpanel_promptChar("LED");
 		switch (ch) {
@@ -290,6 +303,10 @@ void controlpanel_LED() {
 				debug_setLED(ESTOP_LED, !estop_led);
 				estop_led = !estop_led;
 				break;
+			case 't':
+				debug_setLED(TICK_LED, !tick_led);
+				tick_led = !tick_led;
+				break;
 			case '2':
 				debug_setLED(OTHER2_LED, !led2);
 				led2 = !led2;
@@ -298,25 +315,21 @@ void controlpanel_LED() {
 				debug_setLED(OTHER3_LED, !led3);
 				led3 = !led3;
 				break;
-			case '4':
-				debug_setLED(OTHER4_LED, !led4);
-				led4 = !led4;
-				break;
 			case 'q':
 				debug_setLED(ERROR_LED, false);
 				debug_setLED(ESTOP_LED, false);
+				debug_setLED(TICK_LED, false);
 				debug_setLED(OTHER2_LED, false);
 				debug_setLED(OTHER3_LED, false);
-				debug_setLED(OTHER4_LED, false);
 				return;
 			case '?':
 				static const char msg[] PROGMEM =
 					"LED commands:\n"
 					"  e  - Error LED\n"
 					"  s  - Estop LED\n"
+					"  t  - Tick LED\n"
 					"  2  - LED 2\n"
 					"  3  - LED 3\n"
-					"  4  - LED 4\n"
 					"  q  - Back";
 				puts_P(msg);
 				break;
@@ -351,6 +364,7 @@ void controlpanel_sensor() {
 				static const char msg[] PROGMEM =
 					"Sensor menu:\n"
 					"  e - Encoders\n"
+					"  b - Battery Voltage\n"
 					"  m - Magnetometer\n"
 					"  s - Sonar\n"
 					"  g - GPS\n"
@@ -408,7 +422,8 @@ void controlpanel_encoder() {
 				printf_P(PSTR("R Ticks: %d\n"), ticks);
 				break;
 			case 'r':
-				encoder_resetAll();
+				encoder_reset(LEFT_ENCODER);
+				encoder_reset(RIGHT_ENCODER);
 				break;
 			case 'q':
 				return;

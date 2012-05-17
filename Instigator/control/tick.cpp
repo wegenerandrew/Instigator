@@ -1,11 +1,11 @@
 #include "control/motorcontrol.h"
 #include "control/magfollow.h"
 #include "control/tick.h"
+#include "control/odometry.h"
 #include "debug/debug.h"
 #include "hardware/estop.h"
 #include "hardware/motor.h"
 #include "hardware/gps.h"
-#include "hardware/encoder.h"
 
 #include <avr/interrupt.h>
 #include <avr/io.h>
@@ -59,13 +59,16 @@ uint16_t tick_getLength() { // in uS
 
 ISR(TIMOVFVEC) {
 	uint16_t start = tim.CNT;
+	debug_setLED(TICK_LED, true);
 	tickcount++;
 
 	magfollow_tick();
 	motor_tick();
 	gps_tick();
-	encoder_tick();
+	debug_tick();
+	odometry_tick();
 
+	debug_setLED(TICK_LED, false);
 	ticklength = tim.CNT - start;
 }
 

@@ -6,6 +6,7 @@
 #include "debug/uart.h"
 #include "control/gpsparse.h"
 #include "control/odometry.h"
+#include "control/magfollow.h"
 
 #include <util/delay.h>
 #include <avr/io.h>
@@ -14,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <avr/pgmspace.h>
+#include <math.h>
 
 // gps uart
 static PORT_t &uartport_gps = PORTD;
@@ -49,12 +51,11 @@ utmCoordinates utmCoordinatesOut;
 double X_Coord_Dec, Y_Coord_Dec, X_utm, Y_utm;
 float X_Actual = 0;
 float Y_Actual = 0;
-float Cos_Theta, Sin_Theta;
 
 struct UARTData {
 	char outbuf[64];
 	volatile uint8_t outbuf_pos;
-	char inbuf[8];	// 128
+	char inbuf[8];
 	volatile uint8_t inbuf_pos;
 };
 
@@ -82,7 +83,7 @@ void gps_init() {
 	uart_gps.BAUDCTRLB = (bscale_gps << USART_BSCALE_gp) | (bsel_gps >> 8);
 
 	// Send startup commands to GPS (may not have to do every time?)
-	gps_puts(&gps_fullReset[0]);
+/*	gps_puts(&gps_fullReset[0]);
 	_delay_ms(10);					// Delays are just to be sure we have plenty of time to clock everything out without filling up the buffer
 	gps_puts(&gps_rt20Reset[0]);
 	_delay_ms(10);
@@ -96,11 +97,10 @@ void gps_init() {
 	_delay_ms(10);
 	gps_puts(&gps_comOut[0]);
 	_delay_ms(10);
-	gps_puts(&gps_save[0]);
+	gps_puts(&gps_save[0]);*/
 }
 
 bool gps_put(char ch) {
-//	uart_put(UART_XBEE, ch);
 	UARTData &data = gpsdata;
 	USART_t &usart = *uarts;
 
@@ -177,7 +177,6 @@ void gps_tick() {
 
 			Lat_Std_Dev	= (float)(atof(ptrLat_Std_Dev));				// Convert String into float
 			Lon_Std_Dev	= (float)(atof(ptrLon_Std_Dev));				// Convert String into float
-	//		printf("long: %f, lat: %f\n", fLongitude, fLatitude);
 
 			utmCoordinatesOut = *LLA_UTM2(fLatitude, fLongitude);	// Convert Lat/Lon to UTM
 
@@ -188,10 +187,10 @@ void gps_tick() {
 			X_utm = X_utm + X_Coord_Dec;	// Combine the two previous to get UTM in ##.###### format
 			Y_utm = Y_utm + Y_Coord_Dec;	// Combine the two previous to get UTM in ##.###### format
 
-			X_Actual = (float)(X_utm * Cos_Theta - Y_utm * Sin_Theta);		// Transform x
-			Y_Actual = (float)(X_utm * Sin_Theta + Y_utm * Cos_Theta);		// Transform y
+			float heading = magfollow_getHeading();
+			X_Actual = (float)(X_utm * cos(heading) - Y_utm * sin(heading));		// Transform x
+			Y_Actual = (float)(X_utm * sin(heading) + Y_utm * cos(heading));		// Transform y
 			odometry_setPos(X_Actual, Y_Actual);
-			//printf("x: %f, y: %f\n", X_Actual, Y_Actual);
 		}
 	}
 }
@@ -342,5 +341,3 @@ ISR(TXVEC_GPS) {
 ISR(RXVEC_GPS) {
 	receive();
 }
-
-
