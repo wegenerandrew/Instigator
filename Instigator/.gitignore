@@ -6,8 +6,5 @@
 *.hex
 *.lss
 *.elf
-*.png
-*.pdf
 .dep
 TODO
-iox128a1.h
