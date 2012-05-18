@@ -5,10 +5,10 @@
 #include "util.h"
 
 void drive(float lvel, float rvel) {		// Velocities in centimeters/second.
-//	motorcontrol_setRPS(MOTOR_LEFT, lvel/wheel_circumference);
-//	motorcontrol_setRPS(MOTOR_RIGHT, rvel/wheel_circumference);
-//	motorcontrol_setEnabled(true);
-	motor_ramp(lvel, rvel);
+	motorcontrol_setRPS(MOTOR_LEFT, lvel/wheel_circumference);
+	motorcontrol_setRPS(MOTOR_RIGHT, rvel/wheel_circumference);
+	motorcontrol_setEnabled(true);
+//	motor_ramp(lvel, rvel);		// From before encoders
 }
 
 void drive_dist(float lvel, float rvel, float dist) {
@@ -20,13 +20,13 @@ void drive_dist(float lvel, float rvel, float dist) {
 	}
 	
 	int16_t encoder_ticks = (int16_t)((dist / wheel_circumference) * ticks_per_rotation);
-	uint16_t encoder_start = encoder_get((EncoderNum)mot);
+	uint16_t encoder_start = encoder_get((Encoder)mot);
 
 	drive(lvel, rvel);
 	if (dist > 0) {
-		while (encoder_diff(encoder_get((EncoderNum)mot), encoder_start) < encoder_ticks) { }
+		while (encoder_diff(encoder_get((Encoder)mot), encoder_start) < encoder_ticks) { }
 	} else {
-		while (encoder_diff(encoder_get((EncoderNum)mot), encoder_start) > encoder_ticks) { }
+		while (encoder_diff(encoder_get((Encoder)mot), encoder_start) > encoder_ticks) { }
 	}
 	drive_stop();
 }

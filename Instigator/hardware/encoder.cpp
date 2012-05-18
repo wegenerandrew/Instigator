@@ -31,14 +31,14 @@ void encoder_init() {
 	encodertim0.CTRLA = encodertim1.CTRLA = TC_CLKSEL_DIV1_gc; // div1 clock selection required for qdec to work
 }
 
-uint16_t encoder_get(EncoderNum num) {
+uint16_t encoder_get(Encoder num) {
 	if (num == LEFT_ENCODER)
-		return -encodertim0.CNT;
+		return encodertim0.CNT;		// was negative
 	else
 		return -encodertim1.CNT;
 }
 
-void encoder_reset(EncoderNum num) {
+void encoder_reset(Encoder num) {
 	if (num == LEFT_ENCODER)
 		encodertim0.CNT = 0;
 	else

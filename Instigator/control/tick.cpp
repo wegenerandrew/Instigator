@@ -4,8 +4,8 @@
 #include "control/odometry.h"
 #include "debug/debug.h"
 #include "hardware/estop.h"
-#include "hardware/motor.h"
 #include "hardware/gps.h"
+#include "hardware/motor.h"
 
 #include <avr/interrupt.h>
 #include <avr/io.h>
@@ -22,11 +22,11 @@ static volatile uint16_t ticklength;
 
 
 void tick_init() {
-	tim.CTRLA = TC_CLKSEL_DIV64_gc; // 32Mhz / 8 = 4 Mhz timer (TICK_TIMHZ == 4E6)
-	tim.CTRLB = TC0_CCAEN_bm; // enable capture compare A
-	tim.PER = TICK_TIMMAX; // TICK_TIMHZ / (TICK_TIMHZ / TICK_HZ) = TICK_HZ timer
-	tim.CCABUF = 200; // 200 / 4Mhz = 50us CCA (for linesensor)
-	tick_resume(); // enable interrupts
+	tim.CTRLA = TC_CLKSEL_DIV64_gc; 	// 32Mhz / 64 = .5 Mhz timer (TICK_TIMHZ == 5E5)
+	tim.CTRLB = TC0_CCAEN_bm; 			// enable capture compare A
+	tim.PER = TICK_TIMMAX; 				// TICK_TIMHZ / (TICK_TIMHZ / TICK_HZ) = TICK_HZ timer
+	tim.CCABUF = 200; 					// 200 / .5Mhz = 400us CCA (for linesensor)
+	tick_resume(); 						// enable interrupts
 }
 
 
@@ -64,6 +64,7 @@ ISR(TIMOVFVEC) {
 
 	magfollow_tick();
 	motor_tick();
+	motorcontrol_tick();
 	gps_tick();
 	debug_tick();
 	odometry_tick();

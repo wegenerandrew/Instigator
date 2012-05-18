@@ -4,14 +4,14 @@
 #include "hardware/motor.h"
 #include "control/pid.h"
 
-static const int motorcontrol_count = 2;
+static const int motorcontrol_count = 2;	// Number of motors under control of motorcontrol
 
 void motorcontrol_init();
 
-float motorcontrol_getRPS(int motnum);
-float motorcontrol_getRPSDesired(int motnum);
-void motorcontrol_setRPS(int motnum, float RPS);
-inline void motorcontrol_stop(int mot) { motorcontrol_setRPS(mot, 0); }
+float motorcontrol_getRPS(Motor motnum);
+float motorcontrol_getRPSDesired(Motor motnum);
+void motorcontrol_setRPS(Motor motnum, float RPS);
+inline void motorcontrol_stop(Motor mot) { motorcontrol_setRPS(mot, 0); }
 
 void motorcontrol_setEnabled(bool enabled=true);
 void motorcontrol_setGains(const PIDGains &newpidgains);

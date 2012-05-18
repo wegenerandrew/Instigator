@@ -8,7 +8,7 @@
 #define TICK_US (1000000/TICK_HZ)
 #define TICK_DT (1.0f/TICK_HZ)
 
-#define TICK_TIMHZ 4E6
+#define TICK_TIMHZ 5E5
 #define TICK_TIMMAX (TICK_TIMHZ/TICK_HZ)
 
 void tick_init();

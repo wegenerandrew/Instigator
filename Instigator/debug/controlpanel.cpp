@@ -1,9 +1,11 @@
 #include "control/drive.h"
 #include "control/magfollow.h"
+#include "control/motorcontrol.h"
 #include "control/tick.h"
 #include "control/odometry.h"
 #include "hardware/gps.h"
 #include "debug/debug.h"
+#include "debug/tests.h"
 #include "debug/controlpanel.h"
 #include "hardware/motor.h"
 #include "hardware/mag.h"
@@ -24,7 +26,7 @@
 static const char unknown_str[] PROGMEM = "Unknown. ? for help.";
 static const float turn_diff = 100;
 
-static float speed = 400;
+static float speed = 100;
 
 
 void controlpanel_init() {
@@ -162,53 +164,53 @@ void controlpanel_drive() {
 
 		switch (ch) {
 			case ' ':
-				motor_ramp(0, 0);
-				//drive_stop();
+				drive_stop();
 				break;
 			case 'x':
 				//drive_stop(DM_TRAJ);
 				break;
 			case 'w':
+	/*			motorcontrol_setRPS(MOTOR_LEFT, 10);
+				motorcontrol_setRPS(MOTOR_RIGHT, 10);
+				motorcontrol_setEnabled(true);
+				motor_setPWM(MOTOR_LEFT, 400);
+				motor_setPWM(MOTOR_RIGHT, 400);*/
 				fwd = true;
 				steer = 0;
-				motor_ramp(speed, speed);
+				drive_fd(speed);
 				break;
 			case 'a':
-				steer = steer - 50;
+				steer = steer - 5;
 				if (fwd) {
-					motor_ramp(speed + steer, speed - steer);
+					drive_steer(steer, speed);
 				} else {
-					motor_ramp(-speed + steer, -speed - steer);
+					drive_steer(steer, -speed);
 				}
 				break;
 			case 's':
 				fwd = false;
 				steer = 0;
-				motor_ramp(-speed, -speed);
+				drive_bk(speed);
 				break;
 			case 'd':
-				steer = steer + 50;
+				steer = steer + 5;
 				if (fwd) {
-					motor_ramp(speed + steer, speed - steer);
+					drive_steer(steer, speed);
 				} else {
-					motor_ramp(-speed + steer, -speed - steer);
+					drive_steer(steer, -speed);
 				}
 				break;
 			case 'W':
-				motor_ramp(speed, speed);
-				//drive_fd(speed);
+				drive_fd(speed);
 				break;
 			case 'A':
-				motor_ramp(-200, 200);
-				//drive_lturn(speed);
+				drive_lturn(speed);
 				break;
 			case 'S':
-				motor_ramp(-speed, -speed);
-				//drive_bk(speed);
+				drive_bk(speed);
 				break;
 			case 'D':
-				motor_ramp(200, -200);
-				//drive_rturn(speed);
+				drive_rturn(speed);
 				break;
 			case 'k':
 				weedwhacker_power(false);
@@ -234,21 +236,21 @@ void controlpanel_drive() {
 				break;
 
 			case 'p':
-				//motorcontrol_setDebug(false);
+				motorcontrol_setDebug(false);
 				printf_P(PSTR("Debug disabled\n"));
 				break;
 
 			case 'c':
-				//motorcontrol_setEnabled(false);
+				motorcontrol_setEnabled(false);
 				printf_P(PSTR("Motor control disabled\n"));
 				break;
 
 			case 'P':
-				//motorcontrol_setDebug(true);
+				motorcontrol_setDebug(true);
 				break;
 
 			case 'q':	
-				//motorcontrol_setEnabled(false);
+				motorcontrol_setEnabled(false);
 				return;
 
 			case 'm': {
@@ -266,7 +268,7 @@ void controlpanel_drive() {
 
 			default:
 				puts_P(unknown_str);
-				//drive_stop();
+				drive_stop();
 				break;
 			case '?':
 				static const char msg[] PROGMEM =
@@ -425,6 +427,10 @@ void controlpanel_encoder() {
 				encoder_reset(LEFT_ENCODER);
 				encoder_reset(RIGHT_ENCODER);
 				break;
+			case 's':
+				motorcontrol_setEnabled(true);
+				printf_P(PSTR("L RPS: %f, R RPS: %f\n"), motorcontrol_getRPS(MOTOR_LEFT), motorcontrol_getRPS(MOTOR_RIGHT));
+				break;
 			case 'q':
 				return;
 			case '?':
@@ -432,6 +438,7 @@ void controlpanel_encoder() {
 					"Encoder menu:\n"
 					"  p - position (ticks)\n"
 					"  r - Reset counter\n"
+					"  s - RPS of wheels\n"
 					"  q - Back\n";
 				puts_P(msg);
 				break;
@@ -548,12 +555,25 @@ void controlpanel_calibrate() {
 					printf_P(PSTR("Cancelled.\n"));
 				}
 				break;
+			case 'd':
+				if (controlpanel_promptGains("motorcontrol", motorcontrol_getGains(), newgains)) {
+					motorcontrol_setGains(newgains);
+					printf_P(PSTR("Gains set!\n"));
+				} else {
+					printf_P(PSTR("Cancelled.\n"));
+				}
+				break;
+			case 'f':
+				tests_feedforward();
+				break;
 			case 'q':
 				return;
 			case '?':
 				static const char msg[] PROGMEM =
 					"Calibrate Menu:\n"
 					"  m - Magnetometer PID\n"
+					"  d - Motorcontrol PID\n"
+					"  f - Feed-forward calibration !!MOVES MOTORS!!\n"
 					"  q - Back\n";
 				puts_P(msg);
 				break;
