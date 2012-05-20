@@ -120,6 +120,9 @@ static void receive(UARTNum num) {
 	if (byte == 27) {		// E-Stop is ESC key
 		estop_reboot();
 	}
+	if (byte == 96) {
+		estop_restart();
+	}
 
 	if (data.inbuf_pos >= sizeof(data.inbuf))
 		return;
