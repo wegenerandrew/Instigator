@@ -10,6 +10,7 @@ bool controlpanel();
 
 void controlpanel_drive();
 void controlpanel_autonomy();
+void controlpanel_odometry();
 void controlpanel_LED();
 void controlpanel_sensor();
 void controlpanel_gps();

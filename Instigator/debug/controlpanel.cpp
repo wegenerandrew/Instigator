@@ -48,6 +48,9 @@ bool controlpanel() {
 			case 'a':
 				controlpanel_autonomy();
 				break;
+			case 'o':
+				controlpanel_odometry();
+				break;
 			case 'c':
 				controlpanel_calibrate();
 				break;
@@ -61,6 +64,7 @@ bool controlpanel() {
 					"  s - Sensors\n"
 					"  l - LED\n"
 					"  a - Autonomy\n"
+					"  o - Odometry\n"
 					"  c - Calibrate\n"
 					"  q - Quit";
 				puts_P(msg);
@@ -138,12 +142,44 @@ void controlpanel_autonomy() {
 			case '?':
 				static const char msg[] PROGMEM =
 					"Control Panels:\n"
-					"  s - Set Heading\n"
-					"  h - Current Heading\n"
-					"  w - Magfollow\n"
-					"  a - Shift following left\n"
-					"  d - Shift following right\n"
-					"  t - MagTurn\n"
+					"  G  - Goto Coordinate w/ Obstacle Avoidance\n"
+					"  g  - Goto Coordinate\n"
+					"  e  - Print states of enables\n"
+					"  s  - Set Heading\n"
+					"  h  - Current Heading\n"
+					"  w  - Magfollow\n"
+					"  a  - Shift following left\n"
+					"  d  - Shift following right\n"
+					"  t  - MagTurn\n"
+					" O/o - Enable/Disable Obstacle Avoidance\n"
+					"  c  - Auto-Calibration Routine\n"
+					"  f  - Halt\n"
+					" ' ' - Stop\n"
+					"  q  - Quit";
+				puts_P(msg);
+				break;
+			default:
+				puts_P(unknown_str);
+				break;
+		}
+	}
+}
+
+void controlpanel_odometry() {
+	OdomData odom;
+	while(true) {
+		char ch = controlpanel_promptChar("Odometry");
+		switch (ch) {
+			case 'p':
+				odom = odometry_getPos();
+				printf_P(PSTR("X: %f, Y: %f, Heading (deg): %f\n"), odom.x_pos, odom.y_pos, radtodeg(odom.heading));
+				break;
+			case 'q':
+				return;
+			case '?':
+				static const char msg[] PROGMEM =
+					"Control Panels:\n"
+					"  p - Current Position Data\n"
 					" ' '- Stop\n"
 					"  q - Quit";
 				puts_P(msg);

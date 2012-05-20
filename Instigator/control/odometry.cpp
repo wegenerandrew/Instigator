@@ -16,6 +16,10 @@ void odometry_setPos(float newx, float newy) {
 	odom.y_pos = newy;
 }
 
+OdomData odometry_getPos() {
+	return odom;
+}
+
 void odometry_tick() {
 	int ltick = encoder_get(LEFT_ENCODER);
 	int rtick = encoder_get(RIGHT_ENCODER);
