@@ -555,6 +555,14 @@ void controlpanel_calibrate() {
 					printf_P(PSTR("Cancelled.\n"));
 				}
 				break;
+			case 't':
+				if (controlpanel_promptGains("magturn", magfollow_getTurnGains(), newgains)) {
+					magfollow_setTurnGains(newgains);
+					printf_P(PSTR("Gains set!\n"));
+				} else {
+					printf_P(PSTR("Cancelled.\n"));
+				}
+				break;
 			case 'd':
 				if (controlpanel_promptGains("motorcontrol", motorcontrol_getGains(), newgains)) {
 					motorcontrol_setGains(newgains);
@@ -572,6 +580,7 @@ void controlpanel_calibrate() {
 				static const char msg[] PROGMEM =
 					"Calibrate Menu:\n"
 					"  m - Magnetometer PID\n"
+					"  t - Magturn PID\n"
 					"  d - Motorcontrol PID\n"
 					"  f - Feed-forward calibration !!MOVES MOTORS!!\n"
 					"  q - Back\n";

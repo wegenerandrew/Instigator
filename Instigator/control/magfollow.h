@@ -28,4 +28,7 @@ const MagCal &magfollow_getCal();
 PIDGains magfollow_getGains();
 void magfollow_setGains(const PIDGains &gains);
 
+PIDGains magfollow_getTurnGains();
+void magfollow_setTurnGains(const PIDGains &newpidturngains);
+
 #endif
