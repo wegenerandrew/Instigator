@@ -28,8 +28,11 @@
 static const char unknown_str[] PROGMEM = "Unknown. ? for help.";
 static const float turn_diff = 100;
 
-static float speed = 100;
-
+static float speed = 0;
+static float setSpeed = 100;
+static float speed_incrementer = 10;
+static float steer_incrementer = 5;
+static float turn_reducer = 50;
 
 void controlpanel_init() {
 	printf_P(PSTR("Starting up\n"));
@@ -245,7 +248,6 @@ void controlpanel_odometry() {
 		}
 	}
 }
-				
 
 void controlpanel_drive() {
 	int16_t steer = 0;
@@ -256,52 +258,57 @@ void controlpanel_drive() {
 		switch (ch) {
 			case ' ':
 				drive_stop();
+				speed = 0;
+				steer = 0;
 				break;
 			case 'x':
 				//drive_stop(DM_TRAJ);
 				break;
 			case 'w':
-	/*			motorcontrol_setRPS(MOTOR_LEFT, 10);
-				motorcontrol_setRPS(MOTOR_RIGHT, 10);
-				motorcontrol_setEnabled(true);
-				motor_setPWM(MOTOR_LEFT, 400);
-				motor_setPWM(MOTOR_RIGHT, 400);*/
 				fwd = true;
 				steer = 0;
+				speed += speed_incrementer;
+				printf_P(PSTR("Speed: %f\n"), speed);
 				drive_fd(speed);
 				break;
 			case 'a':
-				steer = steer - 5;
+				steer -= steer_incrementer;
 				if (fwd) {
 					drive_steer(steer, speed);
 				} else {
-					drive_steer(steer, -speed);
+					drive_steer(steer, speed);
 				}
 				break;
 			case 's':
 				fwd = false;
 				steer = 0;
-				drive_bk(speed);
+				speed -= speed_incrementer;
+				printf_P(PSTR("Speed: %f\n"), speed);
+				drive_fd(speed);		// speed will be negative!!
 				break;
 			case 'd':
-				steer = steer + 5;
+				steer += steer_incrementer;
 				if (fwd) {
 					drive_steer(steer, speed);
 				} else {
-					drive_steer(steer, -speed);
+					drive_steer(steer, speed);
 				}
 				break;
 			case 'W':
-				drive_fd(speed);
+				fwd = true;
+				steer = 0;
+				drive_fd(setSpeed);
 				break;
 			case 'A':
-				drive_lturn(speed);
+				drive_lturn(setSpeed - turn_reducer);
 				break;
 			case 'S':
-				drive_bk(speed);
+				fwd = false;
+				steer = 0;
+				drive_bk(setSpeed);
 				break;
 			case 'D':
-				drive_rturn(speed);
+				drive_rturn(setSpeed - turn_reducer);
 				break;
 			case 'k':
 				weedwhacker_power(false);
@@ -310,20 +317,20 @@ void controlpanel_drive() {
 				weedwhacker_power(true);
 				break;
 			case '=':
-				speed += 100;
-				printf_P(PSTR("Speed: %f\n"), speed);
+				setSpeed += 100;
+				printf_P(PSTR("Speed: %f\n"), setSpeed);
 				break;
 			case '-':
-				speed -= 100;
-				printf_P(PSTR("Speed: %f\n"), speed);
+				setSpeed -= 100;
+				printf_P(PSTR("Speed: %f\n"), setSpeed);
 				break;
 			case '+':
-				speed += 10;
-				printf_P(PSTR("Speed: %f\n"), speed);
+				setSpeed += 10;
+				printf_P(PSTR("Speed: %f\n"), setSpeed);
 				break;
 			case '_':
-				speed -= 10;
-				printf_P(PSTR("Speed: %f\n"), speed);
+				setSpeed -= 10;
+				printf_P(PSTR("Speed: %f\n"), setSpeed);
 				break;
 
 			case 'p':
