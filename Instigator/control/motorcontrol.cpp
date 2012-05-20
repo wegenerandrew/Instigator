@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <avr/pgmspace.h>
 
-static PIDGains pidgains = {1.1, 0, .01, 0};
+static PIDGains pidgains = {150, 0, .01, 0};
 
 volatile static bool enabled;
 volatile static bool debug;
