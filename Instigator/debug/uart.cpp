@@ -120,7 +120,7 @@ static void receive(UARTNum num) {
 	if (byte == 27) {		// E-Stop is ESC key
 		estop_reboot();
 	}
-	if (byte == 96) {
+	if (byte == 126) {		// ~ does a software reset (no solenoid), shifted so not hit in panic
 		estop_restart();
 	}
 
