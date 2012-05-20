@@ -3,6 +3,8 @@
 #include "control/motorcontrol.h"
 #include "control/tick.h"
 #include "control/odometry.h"
+#include "control/goto.h"
+#include "control/obstacleAvoidance.h"
 #include "hardware/gps.h"
 #include "debug/debug.h"
 #include "debug/tests.h"
@@ -76,9 +78,48 @@ bool controlpanel() {
 void controlpanel_autonomy() {
 	float follow = 0;
 	char input = ' ';
+	OdomData odom;
 	while (true) {
 		char ch = controlpanel_promptChar("Autonomy");
 		switch (ch) {
+			case 'G': {
+				float x_des, y_des, vel;
+				odom = odometry_getPos();
+				printf_P(PSTR("Current Position, X: %f, Y: %f, Heading (deg): %f\n"), odom.x_pos, odom.y_pos, radtodeg(odom.heading));
+				controlpanel_prompt("Goto X (meters): ", "%f", &x_des);
+				controlpanel_prompt("Goto Y (meters): ", "%f", &y_des);
+				controlpanel_prompt("At, Vel (cm/s): ", "%f", &vel);
+				obstacleAvoidance_setEnabled(true);
+				goto_pos(x_des*100, y_des*100, vel);		// *100 gives cm from meters input
+				break;
+			}
+			case 'g': {
+				float x_des, y_des, vel;
+				odom = odometry_getPos();
+				printf_P(PSTR("Current Position, X: %f, Y: %f, Heading (deg): %f\n"), odom.x_pos, odom.y_pos, radtodeg(odom.heading));
+				controlpanel_prompt("Goto X (meters): ", "%f", &x_des);
+				controlpanel_prompt("Goto Y (meters): ", "%f", &y_des);
+				controlpanel_prompt("At, Vel (cm/s): ", "%f", &vel);
+				goto_pos(x_des*100, y_des*100, vel);		// *100 gives cm from meters input
+				break;
+			}
+			case 'e':
+				if (goto_getEnabled()) {
+					printf_P(PSTR("Goto: enabled, "));
+				} else {
+					printf_P(PSTR("Goto: disabled, "));
+				}
+				if (magfollow_enabled()) {
+					printf_P(PSTR("Magfollow: enabled, "));
+				} else {
+					printf_P(PSTR("Magfollow: disabled, "));
+				}
+				if (obstacleAvoidance_getEnabled()) {
+					printf_P(PSTR("Obstacle Avoidance: enabled.\n"));
+				} else {
+					printf_P(PSTR("Obstacle Avoidance: disabled.\n"));
+				}
+				break;
 			case 's': {			// Sets current heading of robot to prompted heading from user
 				float newheading;
 				controlpanel_prompt("Heading (deg)", "%f", &newheading);
@@ -94,40 +135,52 @@ void controlpanel_autonomy() {
 			case 'w': {
 				printf_P(PSTR("Currently Facing (deg): %f\n"), radtodeg(magfollow_getHeading()));
 				controlpanel_prompt("Follow at Heading (deg)", "%f", &follow);
-				magfollow_start(speed, anglewrap(degtorad(follow)));
-				printf_P(PSTR("Following at: %f\n"), follow);
+				magfollow_start(setSpeed, anglewrap(degtorad(follow)));
+				printf_P(PSTR("Following at (deg): %f\n"), follow);
 				break;
 			}
 			case 'a':
 				follow = follow + 5;
 				if (magfollow_enabled()) {
-					magfollow_start(speed, anglewrap(degtorad(follow)));
-					printf_P(PSTR("Following at: %f\n"), follow);
+					magfollow_start(setSpeed, anglewrap(degtorad(follow)));
+					printf_P(PSTR("Following at (deg): %f\n"), follow);
 				} else {
-					printf_P(PSTR("Not following, but heading set to: %f\n"), follow);
+					printf_P(PSTR("Not following, but heading set to (deg): %f\n"), follow);
 				}
 				break;
 			case 'd':
 				follow = follow - 5;
 				if (magfollow_enabled()) {
-					magfollow_start(speed, anglewrap(degtorad(follow)));
-					printf_P(PSTR("Following at: %f\n"), follow);
+					magfollow_start(setSpeed, anglewrap(degtorad(follow)));
+					printf_P(PSTR("Following at (deg): %f\n"), follow);
 				} else {
-					printf_P(PSTR("Not following, but heading set to: %f\n"), follow);
+					printf_P(PSTR("Not following, but heading set to (deg): %f\n"), follow);
 				}
 				break;
 			case 't':
 				printf_P(PSTR("Currently Facing (deg): %f\n"), radtodeg(magfollow_getHeading()));
 				controlpanel_prompt("Turn to Heading (deg)", "%f", &follow);
-				printf_P(PSTR("Currently at: %f, Turning to: %f\n"), magfollow_getHeading(), follow);
-				magfollow_turn(speed, anglewrap(degtorad(follow)));
+				follow = degtorad(follow);
+				printf_P(PSTR("Currently at (deg): %f, Turning to (deg): %f\n"), radtodeg(magfollow_getHeading()), radtodeg(follow));
+				magfollow_turn(setSpeed, anglewrap(follow));
+				break;
+			case 'o':
+				obstacleAvoidance_setEnabled(false);
+				printf_P(PSTR("Obstacle Avoidance Disabled.\n"));
+				break;
+			case 'O':
+				obstacleAvoidance_setEnabled(true);
+				printf_P(PSTR("Obstacle Avoidance Enabled!\n"));
 				break;
 			case 'c':
 				printf_P(PSTR("Beginning auto-cal!\nTurn robot to face 0 Degrees in field.\n"));
 				input = controlpanel_promptChar("Press 'Enter' to begin or any other key to cancel.");
-				if (input == 13) {
+				if (input == 10) {
+					printf_P(PSTR("Calibrating...\n"));
 					magfollow_setHeading(0);		// heading set in radians
 					odometry_setPos(0, 0);
+				} else {
+					printf_P(PSTR("Auto-cal Cancelled.\n"));
 				}
 				break;
 			case 'f':
@@ -135,6 +188,8 @@ void controlpanel_autonomy() {
 				break;
 			case ' ':
 				magfollow_stop();
+				obstacleAvoidance_setEnabled(false);
+				goto_setEnabled(false);
 				break;
 			case 'q':
 				magfollow_stop();

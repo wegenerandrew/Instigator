@@ -2,6 +2,8 @@
 #include "control/magfollow.h"
 #include "control/tick.h"
 #include "control/odometry.h"
+#include "control/goto.h"
+#include "control/obstacleAvoidance.h"
 #include "debug/debug.h"
 #include "hardware/estop.h"
 #include "hardware/gps.h"
