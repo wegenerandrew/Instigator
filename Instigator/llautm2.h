@@ -39,7 +39,7 @@ double e2 = .00669437998863; //(1-pow(b,2)/pow(a,2));// e^2 = (1-b^2/a^2) the ec
  							  //^ WHY WAS THIS BEING CALCULATED EACH TIME!?
 
 //Convert lat, lon from degrees to radians
-double phi = pi*(lat/180); //lattitude
+double phi = pi*(lat/180); //lattitude		// all but phi and lam can be floats possibly?
 double lam = pi*(lon/180); //longitude
 double lon0 = 0.0;
 double lam0 = 0.0;

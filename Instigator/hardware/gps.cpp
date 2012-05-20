@@ -166,11 +166,11 @@ void gps_tick() {
 		fixStatus  = DataIn[ptrFixStatus] - 48;
 
 		if (solStatus == 6) {								// Booting from a cold start
-			printf_P(PSTR("GPS COLD START!"));
+			printf_P(PSTR("GPS not yet converged from cold start?\n"));
 		}
-		if (rt20Status == 5 || rt20Status == 6 || rt20Status == 7) {	// Requires Reset
+/*		if (rt20Status == 5 || rt20Status == 6 || rt20Status == 7) {	// Requires Reset
 			gps_puts(&gps_rt20Reset[0]);
-		}
+		}*/
 		if (solStatus == 0 && rt20Status == 0 && fixStatus == 2) {		// GPS data can be used to update odometry
 			fLongitude  = atof(ptrLongitude);						// Convert String into double
 			fLatitude   = atof(ptrLatitude);						// Convert String into double
