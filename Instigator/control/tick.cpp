@@ -22,7 +22,6 @@ static TC1_t &tim = TCF1;
 static volatile uint32_t tickcount;
 static volatile uint16_t ticklength;
 
-
 void tick_init() {
 	tim.CTRLA = TC_CLKSEL_DIV64_gc; 	// 32Mhz / 64 = .5 Mhz timer (TICK_TIMHZ == 5E5)
 	tim.CTRLB = TC0_CCAEN_bm; 			// enable capture compare A
@@ -30,7 +29,6 @@ void tick_init() {
 	tim.CCABUF = 200; 					// 200 / .5Mhz = 400us CCA (for linesensor)
 	tick_resume(); 						// enable interrupts
 }
-
 
 void tick_wait() {
 	uint32_t t = tickcount;
@@ -41,11 +39,11 @@ void tick_suspend() {
 	tim.INTCTRLA = 0;
 	tim.INTCTRLB = 0;
 }
+
 void tick_resume() {
 	tim.INTCTRLB = TC_CCAINTLVL_HI_gc; // capture compare A interrupt enabled at high priority, because the tick may not be completed before this goes off
 	tim.INTCTRLA = TC_OVFINTLVL_LO_gc; // overflow interrupt enabled at low priority, for running the ticks
 }
-
 
 uint16_t tick_getTimer() {
 	return tim.CNT;
@@ -64,12 +62,14 @@ ISR(TIMOVFVEC) {
 	debug_setLED(TICK_LED, true);
 	tickcount++;
 
-	magfollow_tick();
-	motor_tick();
-	motorcontrol_tick();
+	obstacleAvoidance_tick();
 	gps_tick();
-	debug_tick();
 	odometry_tick();
+	debug_tick();
+	goto_tick();
+	magfollow_tick();
+	motorcontrol_tick();
+	motor_tick();
 
 	debug_setLED(TICK_LED, false);
 	ticklength = tim.CNT - start;
