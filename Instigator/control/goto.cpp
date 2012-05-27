@@ -16,6 +16,8 @@
 static bool enabled = false;
 static int ctr = 100;
 static const float pos_cutoff = 20;	// in centimeters, range before desired point to consider done
+static bool turning = false;
+static float desired_heading;
 
 GotoData data;
 
@@ -44,9 +46,11 @@ void goto_pos(float x_pos, float y_pos, float new_vel) {		// CENTIMETERS!!
 		data.y_dir = -1;
 	}
 	data.vel = new_vel;
-	float desired_heading = goto_findHeading();		// Do primary aiming so we drive relatively straight
-	if (desired_heading > .1) {
-		magfollow_turn(data.vel, desired_heading);
+	desired_heading = goto_findHeading();		// Do primary aiming so we drive relatively straight
+	if (desired_heading > .1) {		// If we need to turn first
+		turning = true;
+	} else {
+		turning = false;
 	}
 	goto_setEnabled(true);
 }
@@ -73,25 +77,36 @@ void goto_tick() {
 		return;
 	}
 
-	// Update current data
-	OdomData odom = odometry_getPos();
-	data.x_current = odom.x_pos;
-	data.y_current = odom.y_pos;
-	data.heading = odom.heading;
+	if (turning) {		// Angle desired is such that we need to turn first
+		magfollow_turn(data.vel, desired_heading);
+		if (magfollow_getTurnEnabled()) {	// for all following ticks we do nothing until magturn is done
+			// Do nothing
+			return;
+		} else {	// magturn is done
+			turning = false;
+		}
+	} else {		// since magturn is done, do magfollow
 
-	// Check if we're already there
-	//if (abs(data.x_desired - data.x_current) < pos_cutoff && abs(data.y_desired - data.y_current) < pos_cutoff) {		// If we're within 20 cm on x and y of desired
-	if (((data.x_dir*(data.x_desired - data.x_current) - pos_cutoff) < 0) && ((data.y_dir*(data.y_desired - data.y_current) - pos_cutoff) < 0)) {
-		goto_stop();		// Then stop following
-		return;
-	}
+		// Update current data
+		OdomData odom = odometry_getPos();
+		data.x_current = odom.x_pos;
+		data.y_current = odom.y_pos;
+		data.heading = odom.heading;
 
-// If not there, continue going there
-	// Drive at necessary heading with limiter for magfollow's PIDs
-	if (ctr >= 100) {
-		magfollow_start(data.vel, goto_findHeading());
-		ctr = 0;
-	} else {
-		ctr++;
+		// Check if we're already there
+		//if (abs(data.x_desired - data.x_current) < pos_cutoff && abs(data.y_desired - data.y_current) < pos_cutoff) {		// If we're within 20 cm on x and y of desired
+		if (((data.x_dir*(data.x_desired - data.x_current) - pos_cutoff) < 0) && ((data.y_dir*(data.y_desired - data.y_current) - pos_cutoff) < 0)) {
+			goto_stop();		// Then stop following
+			return;
+		}
+
+	// If not there, continue going there
+		// Drive at necessary heading with limiter for magfollow's PIDs
+		if (ctr >= 100) {
+			magfollow_start(data.vel, goto_findHeading());
+			ctr = 0;
+		} else {
+			ctr++;
+		}
 	}
 }

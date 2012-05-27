@@ -14,7 +14,8 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
 
-static volatile bool enabled = false;
+static volatile bool follow_enabled = false;
+static volatile bool turn_enabled = false;
 static volatile float heading;						// heading in radians
 static volatile float vel;
 static volatile float error_filter;
@@ -30,44 +31,30 @@ void magfollow_start(float new_vel, float new_heading) {		// heading in radians
 	pid_initState(pidstate);
 	heading = anglewrap(new_heading);
 	vel = new_vel;
-	enabled = true;
+	turn_enabled = false;
+	follow_enabled = true;
 }
 
 void magfollow_stop() {
-	enabled = false;
+	follow_enabled = false;
+	turn_enabled = false;
 	drive_stop();
 }
 
 bool magfollow_enabled() {
-	return enabled;
+	return follow_enabled;
+}
+
+bool magfollow_getTurnEnabled() {
+	return turn_enabled;
 }
 
 void magfollow_turn(float new_vel, float new_heading) {		// heading in radians
 	pid_initState(pidstate);
 	heading = new_heading;
 	vel = new_vel;
-	float error = magfollow_getHeading() - heading;
-	error = anglewrap(error);
-	PIDDebug piddebug;
-	while (ctr < 20) {
-		if (sign(error)*error < degtorad(1)) {	// stop when within this many degrees of desired heading
-			ctr++;
-		} else {
-			ctr = 0;
-		}
-		_delay_ms(10);
-		error = magfollow_getHeading() - heading;
-		error = anglewrap(error);
-		float out = pid_update(pidstate, pidturngains, error, 0.01, &piddebug);
-		if (debug) {
-			pid_printDebug(out, error_filter, piddebug);
-		}
-//		printf("error: %f, pid: %f\n", sign(error)*error, out);	//debugging
-		drive(vel*(out/200), -vel*(out/200));		// if it doesnt reach ends of turns, decrease divisor
-//		printf("lvel: %f, rvel: %f, curr: %f, des: %f\n", vel*(out/300), -vel*(out/300), magfollow_getHeading(), heading);
-	}
-	ctr = 0;
-	drive_stop();
+	follow_enabled = false;
+	turn_enabled = true;
 }
 
 float magfollow_getHeading() {				// Returns heading in radians
@@ -100,23 +87,38 @@ void magfollow_setHeading(float desired_heading) {
 }
 
 void magfollow_tick() {
-	if (!enabled) {
-		return;
+	if (follow_enabled) {
+		float error = magfollow_getHeading() - heading;
+		error = anglewrap(error);
+	
+		error_filter = .85f*error_filter + .15f*error;
+
+		PIDDebug piddebug;
+		float out = pid_update(pidstate, pidgains, error_filter, TICK_DT, &piddebug);
+
+		if (debug)
+			pid_printDebug(out, error_filter, piddebug);
+	
+		drive_steer(10*out, vel);
+	} else if (turn_enabled) {
+		float error = magfollow_getHeading() - heading;
+		error = anglewrap(error);
+		PIDDebug piddebug;
+		if (sign(error)*error < degtorad(1)) {	// stop when within this many degrees of desired heading
+			ctr++;
+		} else {
+			ctr = 0;
+		}
+		float out = pid_update(pidstate, pidturngains, error, 0.01, &piddebug);
+		if (debug) {
+			pid_printDebug(out, error_filter, piddebug);
+		}
+		drive(vel*(out/200), -vel*(out/200));		// if it doesnt reach ends of turns, decrease divisor
+		if (ctr > 20) {		// could need to be increased after being moved into tick
+			ctr = 0;
+			magfollow_stop();
+		}
 	}
-	
-	float error = magfollow_getHeading() - heading;
-	error = anglewrap(error);
-	
-	error_filter = .85f*error_filter + .15f*error;
-
-	PIDDebug piddebug;
-	float out = pid_update(pidstate, pidgains, error_filter, TICK_DT, &piddebug);
-
-	if (debug)
-		pid_printDebug(out, error_filter, piddebug);
-	
-	drive_steer(10*out, vel);
-
 }
 
 void magfollow_setDebug(bool new_debug) {

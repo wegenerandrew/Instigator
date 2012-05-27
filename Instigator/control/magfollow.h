@@ -14,6 +14,7 @@ void magfollow_start(float vel, float heading);
 void magfollow_stop();
 void magfollow_tick();
 bool magfollow_enabled();
+bool magfollow_getTurnEnabled();
 
 void magfollow_turn(float vel, float heading);
 
