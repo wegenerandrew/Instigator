@@ -15,6 +15,7 @@
 
 static bool enabled = false;
 static int ctr = 100;
+static const float pos_cutoff = 20;	// in centimeters, range before desired point to consider done
 
 GotoData data;
 
@@ -24,9 +25,24 @@ static float goto_findHeading() {
 	return anglewrap(atan2(y_diff, x_diff));
 }
 
-void goto_pos(float x_pos, float y_pos, float new_vel) {
+void goto_pos(float x_pos, float y_pos, float new_vel) {		// CENTIMETERS!!
 	data.x_desired = x_pos;
 	data.y_desired = y_pos;
+	OdomData odom = odometry_getPos();
+	data.x_current = odom.x_pos;
+	data.y_current = odom.y_pos;
+	data.x_original = odom.x_pos;
+	data.y_original = odom.y_pos;
+	if ((data.x_desired - data.x_original) > 0) {
+		data.x_dir = 1;
+	} else {
+		data.x_dir = -1;
+	}
+	if ((data.y_desired - data.y_original) > 0) {
+		data.y_dir = 1;
+	} else {
+		data.y_dir = -1;
+	}
 	data.vel = new_vel;
 	float desired_heading = goto_findHeading();		// Do primary aiming so we drive relatively straight
 	if (desired_heading > .1) {
@@ -64,7 +80,8 @@ void goto_tick() {
 	data.heading = odom.heading;
 
 	// Check if we're already there
-	if (abs(data.x_desired - data.x_current) < 10 && abs(data.y_desired - data.y_current) < 10) {		// If we're within 100 cm on x and y of desired
+	//if (abs(data.x_desired - data.x_current) < pos_cutoff && abs(data.y_desired - data.y_current) < pos_cutoff) {		// If we're within 20 cm on x and y of desired
+	if (((data.x_dir*(data.x_desired - data.x_current) - pos_cutoff) < 0) && ((data.y_dir*(data.y_desired - data.y_current) - pos_cutoff) < 0)) {
 		goto_stop();		// Then stop following
 		return;
 	}

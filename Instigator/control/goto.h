@@ -8,6 +8,10 @@ struct GotoData {
 	float y_desired;
 	float x_current;
 	float y_current;
+	float x_original;
+	float y_original;
+	int x_dir;
+	int y_dir;
 	float heading;
 	float vel;
 };
