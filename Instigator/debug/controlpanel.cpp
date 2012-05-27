@@ -1,3 +1,5 @@
+#include "competition/spiralIn.h"
+#include "competition/calibrate.h"
 #include "control/drive.h"
 #include "control/magfollow.h"
 #include "control/motorcontrol.h"
@@ -31,6 +33,7 @@ static const float turn_diff = 100;
 static float speed = 0;
 static float setSpeed = 100;
 static float speed_incrementer = 10;
+static float large_speed_incrementer = 100;
 static float steer_incrementer = 5;
 static float turn_reducer = 50;
 
@@ -48,7 +51,7 @@ bool controlpanel() {
 				controlpanel_sensor();
 				break;
 			case 'l':
-				controlpanel_LED();
+				controlpanel_debug();
 				break;
 			case 'a':
 				controlpanel_autonomy();
@@ -67,7 +70,7 @@ bool controlpanel() {
 					"Control Panels:\n"
 					"  d - Drive\n"
 					"  s - Sensors\n"
-					"  l - LED\n"
+					"  l - debug\n"
 					"  a - Autonomy\n"
 					"  o - Odometry\n"
 					"  c - Calibrate\n"
@@ -88,22 +91,22 @@ void controlpanel_autonomy() {
 			case 'G': {
 				float x_des, y_des, vel;
 				odom = odometry_getPos();
-				printf_P(PSTR("Current Position, X: %f, Y: %f, Heading (deg): %f\n"), odom.x_pos, odom.y_pos, radtodeg(odom.heading));
+				printf_P(PSTR("Current Position, X (meters): %f, Y (meters): %f, Heading (deg): %f\n"), cmtom(odom.x_pos), cmtom(odom.y_pos), radtodeg(odom.heading));
 				controlpanel_prompt("Goto X (meters): ", "%f", &x_des);
 				controlpanel_prompt("Goto Y (meters): ", "%f", &y_des);
 				controlpanel_prompt("At, Vel (cm/s): ", "%f", &vel);
 				obstacleAvoidance_setEnabled(true);
-				goto_pos(x_des*100, y_des*100, vel);		// *100 gives cm from meters input
+				goto_pos(mtocm(x_des), mtocm(y_des), vel);
 				break;
 			}
 			case 'g': {
 				float x_des, y_des, vel;
 				odom = odometry_getPos();
-				printf_P(PSTR("Current Position, X: %f, Y: %f, Heading (deg): %f\n"), odom.x_pos, odom.y_pos, radtodeg(odom.heading));
+				printf_P(PSTR("Current Position, X (meters): %f, Y (meters): %f, Heading (deg): %f\n"), cmtom(odom.x_pos), cmtom(odom.y_pos), radtodeg(odom.heading));
 				controlpanel_prompt("Goto X (meters): ", "%f", &x_des);
 				controlpanel_prompt("Goto Y (meters): ", "%f", &y_des);
 				controlpanel_prompt("At, Vel (cm/s): ", "%f", &vel);
-				goto_pos(x_des*100, y_des*100, vel);		// *100 gives cm from meters input
+				goto_pos(mtocm(x_des), mtocm(y_des), vel);
 				break;
 			}
 			case 'e':
@@ -175,17 +178,57 @@ void controlpanel_autonomy() {
 				obstacleAvoidance_setEnabled(true);
 				printf_P(PSTR("Obstacle Avoidance Enabled!\n"));
 				break;
-			case 'c':
+			case 'c': {
 				printf_P(PSTR("Beginning auto-cal!\nTurn robot to face 0 Degrees in field.\n"));
 				input = controlpanel_promptChar("Press 'Enter' to begin or any other key to cancel.");
 				if (input == 10) {
 					printf_P(PSTR("Calibrating...\n"));
-					magfollow_setHeading(0);		// heading set in radians
-					odometry_setPos(0, 0);
+					calibrate_stationary();
 				} else {
 					printf_P(PSTR("Auto-cal Cancelled.\n"));
 				}
 				break;
+			}
+			case 'C': {
+				printf_P(PSTR("Beginning Competition Routine!\n"));
+				input = controlpanel_promptChar("Press 'Enter' to begin or any other key to cancel.");
+				if (input == 10) {
+					printf_P(PSTR("Calibrating...\n"));
+					Field field = calibrate_competition();
+					float vel;
+					controlpanel_prompt("Velocity (cm/s): ", "%f", &vel);
+					printf_P(PSTR("Running Spiral-In Course!\n"));
+					spiralIn_run(field.xi, field.yi, field.xj, field.yj, field.xk, field.yk, field.xl, field.yl, vel);
+				} else {
+					printf_P(PSTR("Auto-cal Cancelled.\n"));
+				}
+				break;
+			}
+			case 'i': {
+				printf_P(PSTR("Beginning competition auto-cal!\nTurn robot to face 0 Degrees in field.\n"));
+				input = controlpanel_promptChar("Press 'Enter' to begin or any other key to cancel.");
+				if (input == 10) {
+					printf_P(PSTR("Calibrating...\n"));
+				} else {
+					printf_P(PSTR("Auto-cal Cancelled.\n"));
+				}
+				float xi, yi;
+				float xj, yj;
+				float xk, yk;
+				float xl, yl;
+				float vel;
+				controlpanel_prompt("Xi (meters): ", "%f", &xi);
+				controlpanel_prompt("Yi (meters): ", "%f", &yi);
+				controlpanel_prompt("Xj (meters): ", "%f", &xj);
+				controlpanel_prompt("Yj (meters): ", "%f", &yj);
+				controlpanel_prompt("Xk (meters): ", "%f", &xk);
+				controlpanel_prompt("Yk (meters): ", "%f", &yk);
+				controlpanel_prompt("Xl (meters): ", "%f", &xl);
+				controlpanel_prompt("Yl (meters): ", "%f", &yl);
+				controlpanel_prompt("Velocity (cm/s): ", "%f", &vel);
+				spiralIn_run(xi, yi, xj, yj, xk, yk, xl, yl, vel);
+				break;
+			}
 			case 'f':
 				debug_halt("testing");
 				break;
@@ -211,6 +254,8 @@ void controlpanel_autonomy() {
 					"  t  - MagTurn\n"
 					" O/o - Enable/Disable Obstacle Avoidance\n"
 					"  c  - Auto-Calibration Routine\n"
+					"  C  - Do Competition Routine\n"
+					"  i  - Run Spiral-In competition\n"
 					"  f  - Halt\n"
 					" ' ' - Stop\n"
 					"  q  - Quit";
@@ -251,21 +296,15 @@ void controlpanel_odometry() {
 
 void controlpanel_drive() {
 	int16_t steer = 0;
-	bool fwd = true;
 	while (true) {
 		char ch=controlpanel_promptChar("Drive");
-
 		switch (ch) {
 			case ' ':
 				drive_stop();
 				speed = 0;
 				steer = 0;
 				break;
-			case 'x':
-				//drive_stop(DM_TRAJ);
-				break;
 			case 'w':
-				fwd = true;
 				steer = 0;
 				speed += speed_incrementer;
 				printf_P(PSTR("Speed: %f\n"), speed);
@@ -273,14 +312,9 @@ void controlpanel_drive() {
 				break;
 			case 'a':
 				steer -= steer_incrementer;
-				if (fwd) {
-					drive_steer(steer, speed);
-				} else {
-					drive_steer(steer, speed);
-				}
+				drive_steer(steer, speed);
 				break;
 			case 's':
-				fwd = false;
 				steer = 0;
 				speed -= speed_incrementer;
 				printf_P(PSTR("Speed: %f\n"), speed);
@@ -288,24 +322,22 @@ void controlpanel_drive() {
 				break;
 			case 'd':
 				steer += steer_incrementer;
-				if (fwd) {
-					drive_steer(steer, speed);
-				} else {
-					drive_steer(steer, speed);
-				}
+				drive_steer(steer, speed);
 				break;
 			case 'W':
-				fwd = true;
 				steer = 0;
-				drive_fd(setSpeed);
+				speed += large_speed_incrementer;
+				printf_P(PSTR("Speed: %f\n"), speed);
+				drive_fd(speed);
 				break;
 			case 'A':
 				drive_lturn(setSpeed - turn_reducer);
 				break;
 			case 'S':
-				fwd = false;
 				steer = 0;
-				drive_bk(setSpeed);
+				speed -= large_speed_incrementer;
+				printf_P(PSTR("Speed: %f\n"), speed);
+				drive_fd(speed);		// speed will be negative!!
 				break;
 			case 'D':
 				drive_rturn(setSpeed - turn_reducer);
@@ -348,7 +380,7 @@ void controlpanel_drive() {
 				break;
 
 			case 'q':	
-				motorcontrol_setEnabled(false);
+			//	motorcontrol_setEnabled(false);
 				return;
 
 			case 'm': {
@@ -386,7 +418,7 @@ void controlpanel_drive() {
 	}
 }
 
-void controlpanel_LED() {
+void controlpanel_debug() {
 	bool error_led = false;
 	bool estop_led = false;
 	bool tick_led = false;
@@ -415,6 +447,12 @@ void controlpanel_LED() {
 				debug_setLED(OTHER3_LED, !led3);
 				led3 = !led3;
 				break;
+			case 'b':
+				debug_buzzerSolid(4);
+				break;
+			case 'B':
+				debug_buzzerBeep(3);
+				break;
 			case 'q':
 				debug_setLED(ERROR_LED, false);
 				debug_setLED(ESTOP_LED, false);
@@ -430,6 +468,8 @@ void controlpanel_LED() {
 					"  t  - Tick LED\n"
 					"  2  - LED 2\n"
 					"  3  - LED 3\n"
+					"  b  - Solid Buzzer\n"
+					"  B  - Beep Buzzer\n"
 					"  q  - Back";
 				puts_P(msg);
 				break;
@@ -492,6 +532,23 @@ void controlpanel_gps() {
 			case 'p':
 				gps_printPos();
 				break;
+			case 'l': {
+				GPSPos pos = gps_getPos();
+				printf_P(PSTR("Raw position: X: %f, Y: %f\n"), pos.X_Raw, pos.Y_Raw);
+				break;
+			}
+			case 'o':
+				gps_printOffset();
+				break;
+			case 'e':
+				if (gps_getEnabled()) {
+					gps_setEnabled(false);
+					printf_P(PSTR("GPS has been disabled!\n"));
+				} else {
+					gps_setEnabled(true);
+					printf_P(PSTR("GPS has been enabled!\n"));
+				}
+				break;
 			case 'q':
 				return;
 			case '?':
@@ -500,6 +557,9 @@ void controlpanel_gps() {
 					"  r - Raw Data\n"
 					"  s - GPS Status\n"
 					"  p - Position\n"
+					"  l - Global UTM Position\n"
+					"  o - Global UTM Origin Location (calibrated)\n"
+					"  e - Enable/Disable GPS Odom update\n"
 					"  q - Back\n";
 				puts_P(msg);
 				break;
@@ -570,9 +630,12 @@ void controlpanel_magnetometer() {
 				heading = magfollow_getHeading();
 				printf_P(PSTR("Heading: %f\n"), heading);
 				break;
+			case 'j':
+				printf_P(PSTR("Raw heading: %f\n"), magfollow_getRawHeading());
+				break;
 			case 'l':
-				motor_setPWM(MOTOR_LEFT, -600);
-				motor_setPWM(MOTOR_RIGHT, 600);
+				motorcontrol_setRPS(MOTOR_LEFT, -.1);
+				motorcontrol_setRPS(MOTOR_RIGHT, .1);
 				first_heading = magfollow_getHeading();
 				heading = magfollow_getHeading();
 				while (sign(heading - first_heading)*(heading - first_heading) < 1) {
@@ -590,8 +653,8 @@ void controlpanel_magnetometer() {
 					printf_P(PSTR("%d %d %d\n"), dir.x, dir.y, dir.z);
 					heading = magfollow_getHeading();
 				}
-				motor_setPWM(MOTOR_LEFT, 0);
-				motor_setPWM(MOTOR_RIGHT, 0);
+				motorcontrol_setRPS(MOTOR_LEFT, 0);
+				motorcontrol_setRPS(MOTOR_RIGHT, 0);
 				break;
 			case 'q':
 				return;
@@ -601,8 +664,9 @@ void controlpanel_magnetometer() {
 					"  x - x value\n"
 					"  y - y value\n"
 					"  z - z value\n"
-					"  h - heading\n"
-					"  l - calibrate\n"
+					"  h - Heading\n"
+					"  j - Raw Heading\n"
+					"  l - Calibrate\n"
 					"  q - Back\n";
 				puts_P(msg);
 				break;
@@ -618,7 +682,7 @@ void controlpanel_sonar() {
 		char ch = controlpanel_promptChar("Sonars");
 		switch (ch) {
 			case 'd':
-				printf_P(PSTR("LDist: %f, MDist: %f, RDist: %f\n"), sonar_getDist(LEFT_SONAR), sonar_getDist(MIDDLE_SONAR), sonar_getDist(RIGHT_SONAR));
+				printf_P(PSTR("LDist: %f, FDist: %f\n"), sonar_getDist(LEFT_SONAR), sonar_getDist(FRONT_SONAR));
 				break;
 			case 't':
 				printf_P(PSTR("Timer: %f\n"), sonar_getTimer());
