@@ -11,10 +11,18 @@ enum LED {
 	ERROR_LED		// Red
 };
 
+enum BuzzerFunction {
+	BEEP_BUZZER,
+	SOLID_BUZZER
+};
+
 void debug_init();
 void debug_initCheck();
 
 void debug_setLED(LED led, bool on);
+
+void debug_buzzerBeep(int new_buzzer_beepCount);
+void debug_buzzerSolid(int new_buzzerLength);
 
 void debug_resetTimer();
 uint16_t debug_getTimer(); // in us

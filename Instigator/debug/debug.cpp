@@ -17,8 +17,21 @@
 static PORT_t &debugled_port = PORTJ;
 static const int debugled_mask = _BV(0) | _BV(1) | _BV(2) | _BV(3) | _BV(4);
 
+static PORT_t &buzzer_port = PORTH;
+static const int buzzer_mask = _BV(7);
+
+static bool buzzerEnable = false;
+static int buzzerCounter = 0;
+static int buzzer_beepCount = 0;
+static int buzzer_beepDesired = 0;
+static int buzzer_lengthCount = 0;
+static int buzzer_lengthDesired = 0;
+
+BuzzerFunction buzzerFunction;
+
 // debug timer
 static TC1_t &tim = TCC1;
+#define TIMOVFVEC TCC1_OVF_vect
 
 // output flags
 static bool echo_enabled = true;
@@ -33,9 +46,12 @@ static FILE stdinout;
 
 void debug_init() {
 	debugled_port.DIRSET = debugled_mask;
+	buzzer_port.OUTCLR = buzzer_mask;
+	buzzer_port.DIRSET = buzzer_mask;
 	
 	tim.CTRLA = TC_CLKSEL_DIV64_gc; // 32Mhz / 64 = .5 Mhz timer
-	tim.PER = 0xFFFF; // 1Mhz / 65536 = 65ms
+	tim.PER = 0xFFFF; // .5Mhz / 65536 = 131ms
+	tim.INTCTRLA = TC_OVFINTLVL_LO_gc;	// set overflow interrupt to low level
 
 	fdev_setup_stream(&stdinout, put, get, _FDEV_SETUP_RW);
 	stdin = &stdinout;
@@ -67,6 +83,35 @@ void debug_setLED(LED led, bool on) {
 	} else {
 		debugled_port.OUTCLR = _BV(led);
 	}
+}
+
+static void debug_setBuzzer(bool on) {
+	if (on) {
+		buzzer_port.OUTSET = buzzer_mask;
+	} else {
+		buzzer_port.OUTCLR = buzzer_mask;
+	}
+}
+
+static void debug_setBuzzerEnable(bool new_enable) {
+	if (buzzerEnable) {
+		debug_setBuzzer(false);
+	}
+	buzzerEnable = new_enable;
+}
+
+void debug_buzzerBeep(int new_buzzer_beepCount) {
+	buzzer_beepCount = 0;
+	buzzerFunction = BEEP_BUZZER;
+	buzzer_beepDesired = new_buzzer_beepCount;
+	debug_setBuzzerEnable(true);
+}
+
+void debug_buzzerSolid(int new_buzzerLength) {
+	buzzer_lengthCount = 0;
+	buzzerFunction = SOLID_BUZZER;
+	buzzer_lengthDesired = new_buzzerLength;
+	debug_setBuzzerEnable(true);
 }
 
 void debug_tick() {
@@ -140,6 +185,8 @@ void debug_halt(const char *reason) {
 	tick_suspend();
 	motor_allOff();
 
+	debug_buzzerBeep(10);
+
 	bool led=false;
 	while (true) {
 		printf_P(PSTR("Halted: %s\n"), reason);
@@ -147,4 +194,33 @@ void debug_halt(const char *reason) {
 		led = !led;
 		_delay_ms(1000);
 	}
+}
+
+ISR(TIMOVFVEC) {
+	if (buzzerCounter == 5) {	// 5*131ms = 655ms
+		if (buzzerEnable) {
+			if (buzzerFunction == BEEP_BUZZER) {
+				debug_setBuzzer(true);
+				buzzer_beepCount++;
+			} else if (buzzerFunction == SOLID_BUZZER) {
+				debug_setBuzzer(true);
+			}
+		}
+	} else if (buzzerCounter >= 10) {
+		if (buzzerEnable) {
+			if (buzzerFunction == BEEP_BUZZER) {
+				debug_setBuzzer(false);
+				if (buzzer_beepCount >= buzzer_beepDesired) {
+					debug_setBuzzerEnable(false);
+				}
+			} else if (buzzerFunction == SOLID_BUZZER) {
+				buzzer_lengthCount++;
+				if (buzzer_lengthCount >= buzzer_lengthDesired) {
+					debug_setBuzzerEnable(false);
+				}
+			}
+		}
+		buzzerCounter = 0;
+	}
+	buzzerCounter++;
 }
