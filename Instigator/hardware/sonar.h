@@ -1,12 +1,11 @@
 #ifndef SONAR_H_
 #define SONAR_H_
 
-static const int sonar_count = 3;
+static const int sonar_count = 2;
 
 enum Sonar {
-	RIGHT_SONAR,
 	LEFT_SONAR,
-	MIDDLE_SONAR
+	FRONT_SONAR
 };
 
 void sonar_init();
