@@ -20,6 +20,9 @@ inline float sqrf(float f) { return f*f; }
 inline float degtorad(float deg) { return deg * M_PI / 180; }
 inline float radtodeg(float rad) { return rad * 180 / M_PI; }
 
+inline float mtocm(float m) { return m*100; }
+inline float cmtom(float cm) { return cm/100; }
+
 float anglewrap(float rad);
 
 void msleep(unsigned long ms);
