@@ -4,7 +4,6 @@
 #include "hardware/estop.h"
 #include "hardware/gps.h"
 #include "debug/uart.h"
-#include "control/gpsparse.h"
 #include "control/odometry.h"
 #include "control/magfollow.h"
 
@@ -34,9 +33,6 @@ char DataIn[41];
 volatile int NewPacket = 0;
 double fLatitude = 0;
 double fLongitude = 0;
-float Lat_Std_Dev, Lon_Std_Dev;
-
-int satellites, solStatus, rt20Status, fixStatus;
 
 char *ptrLongitude   = &DataIn[15];
 char *ptrLatitude    = &DataIn[2];
@@ -49,8 +45,13 @@ int ptrFixStatus	 = 40;
 
 utmCoordinates utmCoordinatesOut;
 double X_Coord_Dec, Y_Coord_Dec, X_utm, Y_utm;
-float X_Actual = 0;
-float Y_Actual = 0;
+float x_offset = 0;
+float y_offset = 0;
+
+bool enabled = false;	//Enabled will decide whether or not we update odometry with our new gps position (set in initial calibration)
+
+GPSHealth gpsHealth;
+GPSPos gpsPos;
 
 struct UARTData {
 	char outbuf[64];
@@ -98,6 +99,14 @@ void gps_init() {
 	gps_puts(&gps_comOut[0]);
 	_delay_ms(10);
 	gps_puts(&gps_save[0]);*/
+}
+
+void gps_setEnabled(bool new_enabled) {
+	enabled = new_enabled;
+}
+
+bool gps_getEnabled() {
+	return enabled;
 }
 
 bool gps_put(char ch) {
@@ -160,23 +169,27 @@ void gps_tick() {
 		
 		DataIn[37] = ',';*/
 
-		satellites = DataIn[ptrSats] - 48;		// Convert all these into single digit ints from ascii chars
-		solStatus  = DataIn[ptrSolStatus] - 48;
-		rt20Status = DataIn[ptrRt20Status] - 48;
-		fixStatus  = DataIn[ptrFixStatus] - 48;
+		gpsHealth.satellites = DataIn[ptrSats] - 48;		// Convert all these into single digit ints from ascii chars
+		gpsHealth.solStatus  = DataIn[ptrSolStatus] - 48;
+		gpsHealth.rt20Status = DataIn[ptrRt20Status] - 48;
+		gpsHealth.fixStatus  = DataIn[ptrFixStatus] - 48;
 
-		if (solStatus == 6) {								// Booting from a cold start
+		if (gpsHealth.solStatus == 6) {								// Booting from a cold start
 			printf_P(PSTR("GPS not yet converged from cold start?\n"));
 		}
-/*		if (rt20Status == 5 || rt20Status == 6 || rt20Status == 7) {	// Requires Reset
+/*		if (gpsHealth.rt20Status == 5 || gpsHealth.rt20Status == 6 || gpsHealth.rt20Status == 7) {	// Requires Reset
 			gps_puts(&gps_rt20Reset[0]);
 		}*/
-		if (solStatus == 0 && rt20Status == 0 && fixStatus == 2) {		// GPS data can be used to update odometry
+		if (/*gpsHealth.solStatus == 0 && (gpsHealth.rt20Status == 0 || gpsHealth.rt20Status == 1) &&*/ gpsHealth.fixStatus == 2 || gpsHealth.fixStatus == 1) {		// GPS data can be used to update odometry
+			if (!gpsHealth.valid) {
+				debug_buzzerBeep(2);
+			}
+			gpsHealth.valid = true;
 			fLongitude  = atof(ptrLongitude);						// Convert String into double
 			fLatitude   = atof(ptrLatitude);						// Convert String into double
 
-			Lat_Std_Dev	= (float)(atof(ptrLat_Std_Dev));				// Convert String into float
-			Lon_Std_Dev	= (float)(atof(ptrLon_Std_Dev));				// Convert String into float
+			gpsHealth.Lat_Std_Dev	= (float)(atof(ptrLat_Std_Dev));				// Convert String into float
+			gpsHealth.Lon_Std_Dev	= (float)(atof(ptrLon_Std_Dev));				// Convert String into float
 
 			utmCoordinatesOut = *LLA_UTM2(fLatitude, fLongitude);	// Convert Lat/Lon to UTM
 
@@ -184,15 +197,41 @@ void gps_tick() {
 			Y_utm = (int)utmCoordinatesOut.yCoordinate%100;			// We only want up to tens place (field no more than 99 meters)
 			X_Coord_Dec = utmCoordinatesOut.xCoordinate - (int)utmCoordinatesOut.xCoordinate;   // Now get only the decimal places
 			Y_Coord_Dec = utmCoordinatesOut.yCoordinate - (int)utmCoordinatesOut.yCoordinate;   // Now get only the decimal places
+
+			float raw_heading = anglewrap(magfollow_getRawHeading() + M_PI/2);
 			X_utm = X_utm + X_Coord_Dec;	// Combine the two previous to get UTM in ##.###### format
 			Y_utm = Y_utm + Y_Coord_Dec;	// Combine the two previous to get UTM in ##.###### format
+			gpsPos.X_Raw = X_utm;			// Save raw values so that we can calibrate out GPS to 0
+			gpsPos.Y_Raw = Y_utm;
+			X_utm = X_utm - x_offset - gps_base_offset*cos(raw_heading);
+			Y_utm = Y_utm - y_offset - gps_base_offset*sin(raw_heading);
 
-			float heading = magfollow_getHeading();
-			X_Actual = (float)(X_utm * cos(heading) - Y_utm * sin(heading));		// Transform x
-			Y_Actual = (float)(X_utm * sin(heading) + Y_utm * cos(heading));		// Transform y
-			odometry_setPos(X_Actual, Y_Actual);
+			float heading_offset = anglewrap(magfollow_getOffset() - M_PI/2);
+			gpsPos.X_Actual = (float)(X_utm * cos(heading_offset) - Y_utm * sin(heading_offset));		// Transform x
+			gpsPos.Y_Actual = (float)(X_utm * sin(heading_offset) + Y_utm * cos(heading_offset));		// Transform y
+			if (enabled) {
+				odometry_setPos(mtocm(gpsPos.X_Actual), mtocm(gpsPos.Y_Actual));
+			}
+		} else {
+			if (gpsHealth.valid) {
+				debug_buzzerSolid(5);
+			}
+			gpsHealth.valid = false;
 		}
 	}
+}
+
+GPSHealth gps_getHealth() {
+	return gpsHealth;
+}
+
+GPSPos gps_getPos() {
+	return gpsPos;
+}
+
+void gps_setOffset(float x, float y) {
+	x_offset = x;
+	y_offset = y;
 }
 
 void gps_printRaw() {
@@ -203,11 +242,15 @@ void gps_printRaw() {
 }
 
 void gps_printStatus() {
-	printf("sats: %d, sol: %d, rt: %d, fix: %d\n", satellites, solStatus, rt20Status, fixStatus);
+	printf("sats: %d, sol: %d, rt: %d, fix: %d\n", gpsHealth.satellites, gpsHealth.solStatus, gpsHealth.rt20Status, gpsHealth.fixStatus);
 }
 
 void gps_printPos() {
-	printf("x: %f, y: %f\n", X_Actual, Y_Actual);
+	printf("x: %f, y: %f\n", gpsPos.X_Actual, gpsPos.Y_Actual);
+}
+
+void gps_printOffset() {
+	printf_P(PSTR("X: %f, Y: %f\n"), x_offset, y_offset);
 }
 
 // GCC doesn't want to inline these, but its a huge win because num is eliminated and
