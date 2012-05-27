@@ -21,9 +21,9 @@ static volatile float error_filter;
 static volatile bool debug;
 static PIDState pidstate;
 static PIDGains pidturngains = {150, 0, 45, 0};		// TODO: Integral??
-static PIDGains pidgains = {100, 0, 100, 0};
+static PIDGains pidgains = {100, 0, 120, 0};
 static float heading_offset;						// heading offset value in radians
-static MagCal magcal = {-97.5, -81, 0.89606};		// x_offset, y_offset, y_scale
+static MagCal magcal = {-24, -13.5, 0.94566};		// x_offset, y_offset, y_scale
 static int ctr = 0;
 
 void magfollow_start(float new_vel, float new_heading) {		// heading in radians
@@ -49,8 +49,8 @@ void magfollow_turn(float new_vel, float new_heading) {		// heading in radians
 	float error = magfollow_getHeading() - heading;
 	error = anglewrap(error);
 	PIDDebug piddebug;
-	while (ctr < 20) {	// stop when within this many degrees of desired heading
-		if (sign(error)*error < degtorad(1)) {
+	while (ctr < 20) {
+		if (sign(error)*error < degtorad(1)) {	// stop when within this many degrees of desired heading
 			ctr++;
 		} else {
 			ctr = 0;
@@ -76,6 +76,22 @@ float magfollow_getHeading() {				// Returns heading in radians
 	float y = (reading.y - magcal.y_offset)*magcal.y_scale;
 	float value = anglewrap(atan2(y, x) + heading_offset);
 	return value;
+}
+
+float magfollow_getRawHeading() {
+	MagReading reading = mag_getReading();
+	float x = reading.x - magcal.x_offset;
+	float y = (reading.y - magcal.y_offset)*magcal.y_scale;
+	float value = anglewrap(atan2(y, x));
+	return value;
+}
+
+float magfollow_getOffset() {
+	return heading_offset;
+}
+
+void magfollow_setOffset(float offset) {
+	heading_offset = offset;
 }
 
 void magfollow_setHeading(float desired_heading) {

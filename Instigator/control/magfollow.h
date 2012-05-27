@@ -5,6 +5,9 @@
 #include "hardware/mag.h"
 
 float magfollow_getHeading();
+float magfollow_getRawHeading();
+float magfollow_getOffset();
+void magfollow_setOffset(float offset);
 void magfollow_setHeading(float heading);
 
 void magfollow_start(float vel, float heading);
