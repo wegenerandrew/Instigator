@@ -1,9 +1,14 @@
 #include "control/obstacleAvoidance.h"
 #include "control/goto.h"
+#include "control/drive.h"
+#include "control/magfollow.h"
 #include "hardware/sonar.h"
 
 #include <stdint.h>
 #include <math.h>
+#include <util/delay.h>
+#include <stdio.h>
+#include <avr/pgmspace.h>
 
 struct Obstacle {
 	float left_dist, right_dist, front_dist;
@@ -16,12 +21,13 @@ static float x2, y2;
 static float x3, y3;
 static float prev_x, prev_y, vel;
 static int stage = 0;
+static int obstacle_hits = 1;
 
 Obstacle obstacle;
 static bool avoiding = false;
 static bool enabled = false;
-static int obstacle_threshold = 40;
-static int obstacle_surround_square = 100;
+static int obstacle_threshold = 460;
+static int obstacle_surround_square = 300;
 
 void obstacleAvoidance_setEnabled(bool new_enabled) {
 	if (enabled && avoiding && !new_enabled) {		// If we were in the middle of avoiding something, and we turn off avoidance
@@ -37,10 +43,10 @@ bool obstacleAvoidance_getEnabled() {
 }
 
 static void obstacleAvoidance_updateObstacles() {
-	obstacle.left_dist = sonar_getDist(LEFT_SONAR);
-	if (obstacle.left_dist < obstacle_threshold && obstacle.left_filter > 5) {
+/*	obstacle.left_dist = sonar_getDist(LEFT_SONAR);
+	if (obstacle.left_dist < obstacle_threshold && obstacle.left_filter > obstacle_hits) {
 		obstacle.left = true;
-		obstacle.left_filter = 5;
+		obstacle.left_filter = obstacle_hits;
 	} else if (obstacle.left_dist > obstacle_threshold && obstacle.left_filter < 0) {
 		obstacle.left = false;
 		obstacle.left_filter = 0;
@@ -48,11 +54,11 @@ static void obstacleAvoidance_updateObstacles() {
 		obstacle.left_filter++;
 	} else {
 		obstacle.left_filter--;
-	}
-	obstacle.front_dist = sonar_getDist(MIDDLE_SONAR);
-	if (obstacle.front_dist < obstacle_threshold && obstacle.front_filter > 5) {
+	}*/
+	obstacle.front_dist = sonar_getDist(FRONT_SONAR);		// TODO FIX!!!
+	if (obstacle.front_dist < obstacle_threshold && obstacle.front_filter > obstacle_hits) {
 		obstacle.front = true;
-		obstacle.front_filter = 5;
+		obstacle.front_filter = obstacle_hits;
 	} else if (obstacle.front_dist > obstacle_threshold && obstacle.front_filter < 0) {
 		obstacle.front = false;
 		obstacle.front_filter = 0;
@@ -61,10 +67,10 @@ static void obstacleAvoidance_updateObstacles() {
 	} else {
 		obstacle.front_filter--;
 	}
-	obstacle.right_dist = sonar_getDist(RIGHT_SONAR);
-	if (obstacle.right_dist < obstacle_threshold && obstacle.right_filter > 5) {
+/*	obstacle.right_dist = sonar_getDist(RIGHT_SONAR);
+	if (obstacle.right_dist < obstacle_threshold && obstacle.right_filter > obstacle_hits) {
 		obstacle.right = true;
-		obstacle.right_filter = 5;
+		obstacle.right_filter = obstacle_hits;
 	} else if (obstacle.right_dist > obstacle_threshold && obstacle.right_filter < 0) {
 		obstacle.right = false;
 		obstacle.right_filter = 0;
@@ -72,7 +78,7 @@ static void obstacleAvoidance_updateObstacles() {
 		obstacle.right_filter++;
 	} else {
 		obstacle.right_filter--;
-	}
+	}*/
 }
 
 static float obstacleAvoidance_getSteer() {		// if we decide to start using a steering function
@@ -88,11 +94,12 @@ void obstacleAvoidance_tick() {
 
 	if (!avoiding) {		// We weren't avoiding anything yet
 		// Save where we were headed, set avoiding true, disable everything else, plan four points, go to each while inbetween waiting for them to finish
-		if (!obstacle.right && !obstacle.left && !obstacle.front) {
+		if (/*!obstacle.left && !obstacle.left && */!obstacle.front) {
 			return;
 		}
 
 		goto_stop();		// Disabling everything
+		magfollow_stop();
 
 		GotoData data = goto_getData();		// Save previous data (where we were headed)
 		prev_x = data.x_desired;
@@ -142,8 +149,12 @@ void obstacleAvoidance_tick() {
 				y3 = data.y_current;
 			}
 		}
+		goto_stop();
+		magfollow_stop();
+		printf_P(PSTR("Avoiding Obstacle!! %d, %d, %d\n"), obstacle.left, obstacle.front, obstacle.right);
 		stage = 1;
-		goto_pos(x1, x2, vel);
+		printf_P(PSTR("Going to X: %f, Y: %f\n"), x1, y1);
+		goto_pos(x1, y1, vel);
 	} else {				// Otherwise we already were avoiding
 		// check if we're at point yet, if so, goto next, if not, wait
 		// when done, stop avoiding, return to going to prev pos desired
@@ -153,12 +164,24 @@ void obstacleAvoidance_tick() {
 
 		if (stage == 1) {
 			stage = 2;
+			goto_stop();
+			magfollow_stop();
+			_delay_ms(2000);
+			printf_P(PSTR("Going to X: %f, Y: %f\n"), x2, y2);
 			goto_pos(x2, y2, vel);
 		} else if (stage == 2) {
 			stage = 3;
+			goto_stop();
+			magfollow_stop();
+			_delay_ms(2000);
+			printf_P(PSTR("Going to X: %f, Y: %f\n"), x3, y3);
 			goto_pos(x3, y3, vel);
 		} else if (stage == 3) {
 			stage = 0;
+			goto_stop();
+			magfollow_stop();
+			_delay_ms(2000);
+			printf_P(PSTR("Going to X: %f, Y: %f\n"), prev_x, prev_y);
 			goto_pos(prev_x, prev_y, vel);
 			avoiding = false;
 		} else {
