@@ -206,7 +206,7 @@ void gps_tick() {
 			X_utm = X_utm - x_offset - gps_base_offset*cos(raw_heading);
 			Y_utm = Y_utm - y_offset - gps_base_offset*sin(raw_heading);
 
-			float heading_offset = anglewrap(magfollow_getOffset() - M_PI/2);
+			float heading_offset = anglewrap(magfollow_getOffset());
 			gpsPos.X_Actual = (float)(X_utm * cos(heading_offset) - Y_utm * sin(heading_offset));		// Transform x
 			gpsPos.Y_Actual = (float)(X_utm * sin(heading_offset) + Y_utm * cos(heading_offset));		// Transform y
 			if (enabled) {

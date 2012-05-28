@@ -61,7 +61,7 @@ float magfollow_getHeading() {				// Returns heading in radians
 	MagReading reading = mag_getReading();
 	float x = reading.x - magcal.x_offset;
 	float y = (reading.y - magcal.y_offset)*magcal.y_scale;
-	float value = anglewrap(atan2(y, x) + heading_offset);
+	float value = anglewrap(atan2(y, x) + M_PI/2 + heading_offset);
 	return value;
 }
 
@@ -69,7 +69,7 @@ float magfollow_getRawHeading() {
 	MagReading reading = mag_getReading();
 	float x = reading.x - magcal.x_offset;
 	float y = (reading.y - magcal.y_offset)*magcal.y_scale;
-	float value = anglewrap(atan2(y, x));
+	float value = anglewrap(atan2(y, x) + M_PI/2);
 	return value;
 }
 

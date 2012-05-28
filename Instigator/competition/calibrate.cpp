@@ -30,6 +30,7 @@ Calibration calibration;
 Field field;
 
 Field calibrate_competition() {
+	gps_setOffset(0, 0);		// clear out all possible previously done calibrations so we only work in global
 	magfollow_setOffset(0);
 	calibrate_field();
 	return field;
@@ -55,7 +56,7 @@ bool calibrate_gps() {
 	GPSHealth gps = gps_getHealth();
 	if (gps.Lat_Std_Dev < gps_std_dev_cutoff && gps.Lon_Std_Dev < gps_std_dev_cutoff && gps.solStatus == 0 && gps.rt20Status == 0 && gps.fixStatus == 2) {
 		GPSPos pos = gps_getPos();
-		float heading = anglewrap(magfollow_getRawHeading() + M_PI/2);
+		float heading = anglewrap(magfollow_getRawHeading());
 		gps_setOffset(pos.X_Raw - gps_base_offset*cos(heading), pos.Y_Raw - gps_base_offset*sin(heading));
 		gps_setEnabled(true);
 		calibration.gps = true;
@@ -79,15 +80,10 @@ bool calibrate_odom() {
 static Coord calibrate_avgGPS() {
 	GPSPos gps;
 	Coord coord;
-	for (int i = 0; i < 1; i++) {
-		gps = gps_getPos();
-		printf_P(PSTR("X: %f, Y: %f\n"), gps.X_Raw, gps.Y_Raw);
-		coord.x += gps.X_Raw;
-		coord.y += gps.Y_Raw;
-		_delay_ms(100);
-	}
-	coord.x = coord.x;
-	coord.y = coord.y;
+	gps = gps_getPos();
+	coord.x = gps.X_Raw;
+	coord.y = gps.Y_Raw;
+	printf_P(PSTR("X: %f, Y: %f\n"), gps.X_Raw, gps.Y_Raw);
 	return coord;
 }
 

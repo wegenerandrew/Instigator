@@ -209,6 +209,7 @@ void controlpanel_autonomy() {
 				input = controlpanel_promptChar("Press 'Enter' to begin or any other key to cancel.");
 				if (input == 10) {
 					printf_P(PSTR("Calibrating...\n"));
+					magfollow_setOffset(0);
 				} else {
 					printf_P(PSTR("Auto-cal Cancelled.\n"));
 				}
