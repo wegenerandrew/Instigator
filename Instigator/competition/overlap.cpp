@@ -13,8 +13,8 @@ static void overlap_wait() {
 	}
 }
 
-void overlap_run(float x_min, float x_max, float y_min, float y_max, float vel) {
-	float diff = 0;
+void overlap_run(float xi, float yi, float xj, float yj, float xk, float yk, float xl, float yl, float vel) {
+	/*float diff = 0;
 	if ((x_max - x_min) < (y_max - y_min)) {
 		diff = x_max - x_min;
 	} else {
@@ -33,5 +33,5 @@ void overlap_run(float x_min, float x_max, float y_min, float y_max, float vel) 
 		printf_P(PSTR("I: %f, xmin: %f, ymin: %f.\n"), i, x_min + i, y_min + i + incrementer);
 		goto_pos(mtocm(x_min + i), mtocm(y_min + i + incrementer), vel);
 		overlap_wait();
-	}
+	}*/
 }
