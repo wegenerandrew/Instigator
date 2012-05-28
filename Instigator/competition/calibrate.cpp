@@ -189,6 +189,9 @@ bool calibrate_field() {
 	printf_P(PSTR("Xl: %f, Yl: %f\n"), field.xl, field.yl);
 	gps_setEnabled(true);
 	calibration.field = true;
+
+	printf_P(PSTR("Move robot to position for beginning competition run!\n"));
+	wait_key();
 	
 	return calibration.field;
 }
