@@ -15,7 +15,7 @@
 
 static bool enabled = false;
 static int ctr = 100;
-static const float pos_cutoff = 20;	// in centimeters, range before desired point to consider done
+static const float pos_cutoff = 50;	// in centimeters, range before desired point to consider done
 static bool turning = false;
 static float desired_heading;
 
@@ -49,6 +49,7 @@ void goto_pos(float x_pos, float y_pos, float new_vel) {		// CENTIMETERS!!
 	desired_heading = goto_findHeading();		// Do primary aiming so we drive relatively straight
 	if (desired_heading > .1) {		// If we need to turn first
 		turning = true;
+		magfollow_turn(data.vel, desired_heading);
 	} else {
 		turning = false;
 	}
@@ -78,7 +79,6 @@ void goto_tick() {
 	}
 
 	if (turning) {		// Angle desired is such that we need to turn first
-		magfollow_turn(data.vel, desired_heading);
 		if (magfollow_getTurnEnabled()) {	// for all following ticks we do nothing until magturn is done
 			// Do nothing
 			return;

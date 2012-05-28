@@ -87,10 +87,14 @@ void magfollow_setHeading(float desired_heading) {
 }
 
 void magfollow_tick() {
+	if (!follow_enabled && ! turn_enabled) {
+		return;
+	}
+
 	if (follow_enabled) {
 		float error = magfollow_getHeading() - heading;
 		error = anglewrap(error);
-	
+
 		error_filter = .85f*error_filter + .15f*error;
 
 		PIDDebug piddebug;
@@ -98,7 +102,7 @@ void magfollow_tick() {
 
 		if (debug)
 			pid_printDebug(out, error_filter, piddebug);
-	
+
 		drive_steer(10*out, vel);
 	} else if (turn_enabled) {
 		float error = magfollow_getHeading() - heading;
