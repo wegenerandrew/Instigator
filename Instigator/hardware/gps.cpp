@@ -180,7 +180,7 @@ void gps_tick() {
 /*		if (gpsHealth.rt20Status == 5 || gpsHealth.rt20Status == 6 || gpsHealth.rt20Status == 7) {	// Requires Reset
 			gps_puts(&gps_rt20Reset[0]);
 		}*/
-		if (/*gpsHealth.solStatus == 0 && (gpsHealth.rt20Status == 0 || gpsHealth.rt20Status == 1) &&*/ gpsHealth.fixStatus == 2 || gpsHealth.fixStatus == 1) {		// GPS data can be used to update odometry
+		if (gpsHealth.solStatus == 0 && (gpsHealth.rt20Status == 0 || gpsHealth.rt20Status == 1) && gpsHealth.fixStatus == 2/* || gpsHealth.fixStatus == 1*/) {		// GPS data can be used to update odometry
 			if (!gpsHealth.valid) {
 				debug_buzzerBeep(2);
 			}
