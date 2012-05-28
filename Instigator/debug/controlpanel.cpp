@@ -425,6 +425,7 @@ void controlpanel_debug() {
 	bool tick_led = false;
 	bool led2 = false;
 	bool led3 = false;
+	bool cut = false;
 	while (true) {
 		char ch = controlpanel_promptChar("LED");
 		switch (ch) {
@@ -449,10 +450,13 @@ void controlpanel_debug() {
 				led3 = !led3;
 				break;
 			case 'b':
-				debug_buzzerSolid(4);
-				break;
-			case 'B':
-				debug_buzzerBeep(3);
+				cut = !cut;
+				debug_cutBuzzer(cut);
+				if (cut) {
+					printf_P(PSTR("Buzzer has been cut!\n"));
+				} else {
+					printf_P(PSTR("Buzzer has been enabled!\n"));
+				}
 				break;
 			case 'q':
 				debug_setLED(ERROR_LED, false);
@@ -469,8 +473,7 @@ void controlpanel_debug() {
 					"  t  - Tick LED\n"
 					"  2  - LED 2\n"
 					"  3  - LED 3\n"
-					"  b  - Solid Buzzer\n"
-					"  B  - Beep Buzzer\n"
+					"  b  - Cut/Uncut Buzzer\n"
 					"  q  - Back";
 				puts_P(msg);
 				break;

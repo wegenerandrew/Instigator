@@ -21,6 +21,7 @@ void debug_initCheck();
 
 void debug_setLED(LED led, bool on);
 
+void debug_cutBuzzer(bool cut);
 void debug_buzzerBeep(int new_buzzer_beepCount);
 void debug_buzzerSolid(int new_buzzerLength);
 

@@ -21,6 +21,7 @@ static PORT_t &buzzer_port = PORTH;
 static const int buzzer_mask = _BV(7);
 
 static bool buzzerEnable = false;
+static bool buzzerCut = false;
 static int buzzerCounter = 0;
 static int buzzer_beepCount = 0;
 static int buzzer_beepDesired = 0;
@@ -85,9 +86,17 @@ void debug_setLED(LED led, bool on) {
 	}
 }
 
+void debug_cutBuzzer(bool cut) {
+	buzzerCut = cut;
+}
+
 static void debug_setBuzzer(bool on) {
-	if (on) {
-		buzzer_port.OUTSET = buzzer_mask;
+	if (!buzzerCut) {
+		if (on) {
+			buzzer_port.OUTSET = buzzer_mask;
+		} else {
+			buzzer_port.OUTCLR = buzzer_mask;
+		}
 	} else {
 		buzzer_port.OUTCLR = buzzer_mask;
 	}
