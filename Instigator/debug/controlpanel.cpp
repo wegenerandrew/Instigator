@@ -1,4 +1,5 @@
 #include "competition/spiralIn.h"
+#include "competition/overlap.h"
 #include "competition/calibrate.h"
 #include "control/drive.h"
 #include "control/magfollow.h"
