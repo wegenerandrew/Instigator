@@ -5,6 +5,11 @@
 #include <math.h>
 #include <stdarg.h>
 
+struct Vector {
+	float x;
+	float y;
+};
+
 inline float sign(float in) {
 	if (in > 0) {
 		return 1;
@@ -24,6 +29,7 @@ inline float mtocm(float m) { return m*100; }
 inline float cmtom(float cm) { return cm/100; }
 
 float anglewrap(float rad);
+Vector rotate(Vector vec, float angle);
 
 void msleep(unsigned long ms);
 

@@ -199,7 +199,7 @@ void controlpanel_autonomy() {
 					float vel;
 					controlpanel_prompt("Velocity (cm/s): ", "%f", &vel);
 					printf_P(PSTR("Running Spiral-In Course!\n"));
-					spiralIn_run(field.xi, field.yi, field.xj, field.yj, field.xk, field.yk, field.xl, field.yl, vel);
+					overlap_run(field.xi, field.yi, field.xj, field.yj, field.xk, field.yk, field.xl, field.yl, vel);
 				} else {
 					printf_P(PSTR("Auto-cal Cancelled.\n"));
 				}

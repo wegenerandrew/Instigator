@@ -29,3 +29,10 @@ float anglewrap(float rad) {
 		return rad;
 	}
 }
+
+Vector rotate(Vector vec, float angle) {
+	Vector ans;
+	ans.x = (float)(vec.x * cos(angle) - vec.y * sin(angle));		// Transform x
+	ans.y = (float)(vec.x * sin(angle) + vec.y * cos(angle));		// Transform y
+	return ans;
+}

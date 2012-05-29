@@ -2,6 +2,7 @@
 #define SONAR_H_
 
 static const int sonar_count = 2;
+static const float sonar_max = 640;		// TODO CAL??
 
 enum Sonar {
 	LEFT_SONAR,
